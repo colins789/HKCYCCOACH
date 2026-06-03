@@ -14,6 +14,7 @@
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
+            transform: scale(1.4); /* Make the internal calendar tap icon bigger */
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -21,48 +22,49 @@
 </head>
 <body class="bg-gray-950 text-white font-sans p-3 sm:p-4 md:p-6 min-h-screen h-screen flex flex-col overflow-x-hidden antialiased select-none">
 
-    <header class="mb-4 sm:mb-6 border-b border-gray-800 pb-3 sm:pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 shrink-0">
+    <header class="mb-5 sm:mb-6 border-b border-gray-800 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
         <div>
             <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">HK Cycling Coach Hub</h1>
         </div>
         
-        <div class="flex flex-row items-center gap-3 bg-gray-900 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl w-full md:w-auto justify-between md:justify-start">
-            <div class="flex items-center gap-2">
-                <span class="text-lg sm:text-xl">📅</span>
-                <label for="schedule-date" class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">切換日期:</label>
+        <div class="flex flex-row items-center gap-4 bg-gray-900 p-3 sm:p-4 rounded-2xl border border-gray-800 shadow-2xl w-full md:w-auto justify-between md:justify-start">
+            <div class="flex items-center gap-2.5 shrink-0">
+                <span class="text-2xl">📅</span>
+                <label for="schedule-date" class="text-xs font-black text-gray-400 uppercase tracking-widest block">切換日期</label>
             </div>
-            <div class="flex items-center gap-2">
-                <input type="date" id="schedule-date" onchange="onDateChange()" class="bg-gray-950 border border-gray-700 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-mono font-bold text-cyan-400 focus:outline-none focus:border-cyan-500 transition-colors w-36 sm:w-auto">
-                <button onclick="resetToToday()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[10px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl border border-gray-700 transition cursor-pointer whitespace-nowrap active:scale-95">今日</button>
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                <input type="date" id="schedule-date" onchange="onDateChange()" class="bg-gray-950 border-2 border-gray-700 rounded-xl px-4 py-3 text-base sm:text-lg md:text-xl font-mono font-black text-cyan-400 focus:outline-none focus:border-cyan-500 transition-colors w-full sm:w-52 h-14 cursor-pointer text-center">
+                <button onclick="resetToToday()" class="bg-gray-800 hover:bg-gray-750 active:bg-gray-700 text-white font-black text-sm sm:text-base px-5 rounded-xl border-2 border-gray-600 transition cursor-pointer whitespace-nowrap active:scale-95 h-14 flex items-center justify-center min-w-[70px]">今日</button>
             </div>
         </div>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-grow overflow-y-auto md:overflow-hidden pr-1 pb-4 md:pb-0 no-scrollbar">
         
-        <div class="flex flex-col gap-4 sm:gap-6 h-full">
-            <div class="bg-gray-900 p-4 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col justify-start shrink-0">
-                <div class="text-left mb-3 sm:mb-4 border-b border-gray-800 pb-2">
-                    <span class="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Tools</span>
-                    <h2 class="text-md sm:text-lg font-bold text-gray-200 mt-1">教練專用工具箱</h2>
+        <div class="display-contents md:flex md:flex-col gap-4 sm:gap-6 h-full">
+            
+            <div class="order-1 bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-2xl flex flex-col justify-start shrink-0">
+                <div class="text-left mb-4 border-b border-gray-800 pb-2">
+                    <span class="bg-red-500/20 text-red-400 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">COACH TOOLS</span>
+                    <h2 class="text-xl font-black text-gray-100 mt-1.5">教練專用工具箱</h2>
                 </div>
-                <div class="grid grid-cols-3 md:grid-cols-1 gap-2 sm:gap-3">
-                    <button onclick="openTool('timer-modal')" class="p-3 sm:p-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-bold shadow-md transition transform hover:-translate-y-0.5 active:scale-95 cursor-pointer flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 sm:gap-3">
-                        <span class="text-xl sm:text-2xl">⏱️</span>
-                        <p class="font-black text-[10px] sm:text-sm md:text-md leading-none text-center md:text-left">計時器</p>
+                <div class="flex flex-col gap-3.5">
+                    <button onclick="openTool('timer-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-blue-400/20">
+                        <span class="text-3xl">⏱️</span>
+                        <span class="font-black text-xl tracking-wide">計時器</span>
                     </button>
-                    <button onclick="openTool('tt-modal')" class="p-3 sm:p-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-md transition transform hover:-translate-y-0.5 active:scale-95 cursor-pointer flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 sm:gap-3">
-                        <span class="text-xl sm:text-2xl">🚴</span>
-                        <p class="font-black text-[10px] sm:text-sm md:text-md leading-none text-center md:text-left">個人計時</p>
+                    <button onclick="openTool('tt-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-emerald-400/20">
+                        <span class="text-3xl">🚴</span>
+                        <span class="font-black text-xl tracking-wide">個人計時</span>
                     </button>
-                    <button onclick="openTool('omnium-modal')" class="p-3 sm:p-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold shadow-md transition transform hover:-translate-y-0.5 active:scale-95 cursor-pointer flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 sm:gap-3">
-                        <span class="text-xl sm:text-2xl">📊</span>
-                        <p class="font-black text-[10px] sm:text-sm md:text-md leading-none text-center md:text-left">全能計算</p>
+                    <button onclick="openTool('omnium-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-purple-400/20">
+                        <span class="text-3xl">📊</span>
+                        <span class="font-black text-xl tracking-wide">全能計算</span>
                     </button>
                 </div>
             </div>
 
-            <div class="bg-gray-900 p-4 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col md:flex-grow md:min-h-0 md:max-h-[50%] overflow-hidden">
+            <div class="order-3 bg-gray-900 p-4 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col md:flex-grow md:min-h-0 md:max-h-[50%] overflow-hidden">
                 <div class="text-left mb-3 border-b border-gray-800 pb-2 shrink-0">
                     <span class="bg-cyan-500/10 text-cyan-400 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Schedule Search</span>
                     <h2 class="text-md sm:text-lg font-bold text-gray-200 mt-0.5">教練月份速查</h2>
@@ -88,7 +90,7 @@
             </div>
         </div>
 
-        <div class="md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 h-full md:overflow-hidden">
+        <div class="order-2 md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 h-full md:overflow-hidden">
             <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col md:h-full overflow-hidden">
                 <h2 class="text-xs sm:text-sm font-bold mb-3 sm:mb-4 text-cyan-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2 shrink-0">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
@@ -140,7 +142,7 @@
             const targetModal = document.getElementById(id);
             if (targetModal) {
                 targetModal.classList.add('modal-active'); 
-                document.body.classList.add('overflow-hidden'); // 鎖定背景滾動
+                document.body.classList.add('overflow-hidden');
                 const iframe = targetModal.querySelector('iframe');
                 if (iframe && iframe.src) { iframe.src = iframe.src; }
             }
@@ -150,22 +152,20 @@
             const targetModal = document.getElementById(id);
             if (targetModal) {
                 targetModal.classList.remove('modal-active'); 
-                document.body.classList.remove('overflow-hidden'); // 解鎖背景滾動
+                document.body.classList.remove('overflow-hidden');
             }
         }
 
-        // ================= 課表與排班主程式 =================
         const dateInput = document.getElementById('schedule-date');
         const today = new Date();
         dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
         const SPREADSHEET_BASE = 'https://docs.google.com/spreadsheets/d/1PcTlsCTDaTchMICMx8IQ_AgwHZszINgqxysK_ssWc2k/export?format=csv';
-        const GID_ATTENDANCE = '0';            
+        const GID_ATTENDANCE = '0';
         const GID_YOUTH_PROGRAM = '1879963109'; 
         const GID_STARS_PROGRAM = '92551528';   
 
         let cachedAttendanceRows = [];
-
         function initMonthOptions() {
             const monthSelect = document.getElementById('month-dropdown-select');
             monthSelect.innerHTML = '';
@@ -179,7 +179,7 @@
             }
         }
         initMonthOptions();
-
+        
         function getSelectedYear() {
             if (dateInput && dateInput.value) return dateInput.value.split('-')[0];
             return String(new Date().getFullYear());
@@ -190,7 +190,6 @@
         function syncAndViewDate(isoDateStr) {
             dateInput.value = isoDateStr;
             fetchSchedule();
-            // 在行動端裝置上，點擊後平滑滾動回頁面頂部以看查訓練項目
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -210,7 +209,7 @@
                 month = String(parseInt(numbers[1], 10));
                 day = String(parseInt(numbers[2], 10));
             } else if (numbers.length === 2) {
-                year = getSelectedYear(); 
+                year = getSelectedYear();
                 month = String(parseInt(numbers[0], 10));
                 day = String(parseInt(numbers[1], 10));
             }
@@ -227,7 +226,7 @@
                 month = parseInt(numbers[1], 10) - 1;
                 day = parseInt(numbers[2], 10);
             } else if (numbers.length === 2) {
-                year = parseInt(getSelectedYear(), 10); 
+                year = parseInt(getSelectedYear(), 10);
                 month = parseInt(numbers[0], 10) - 1;
                 day = parseInt(numbers[1], 10);
             }
@@ -255,10 +254,10 @@
                     if (cellDateObj && (cellDateObj.getMonth() + 1) === selectedMonth) {
                         [2, 3, 5, 6, 8, 9].forEach(idx => {
                             if (row[idx]) {
-                                String(row[idx]).split(/[\s,/\、，]+/).forEach(name => {
+                               String(row[idx]).split(/[\s,/\、，]+/).forEach(name => {
                                     const cleanName = name.trim();
                                     if (cleanName.length > 0 && cleanName.length < 15 && !cleanName.includes('-') && !/^\d+$/.test(cleanName)) {
-                                        monthCoachSet.add(cleanName);
+                                       monthCoachSet.add(cleanName);
                                     }
                                 });
                             }
@@ -321,15 +320,14 @@
                 }
 
                 monthMatches.sort((a, b) => a.timestamp - b.timestamp);
-
                 if (monthMatches.length > 0) {
                     resultBox.innerHTML = monthMatches.map(m => `
                         <div onclick="syncAndViewDate('${m.isoDate}')" class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex justify-between items-center hover:border-cyan-500/50 hover:bg-gray-900 transition active:scale-98 shadow-inner cursor-pointer group animate-fadeIn">
                             <div>
-                                <p class="font-mono font-bold text-gray-300 group-hover:text-cyan-400 transition text-[11px]">${m.dateDisplay}</p>
+                                 <p class="font-mono font-bold text-gray-300 group-hover:text-cyan-400 transition text-[11px]">${m.dateDisplay}</p>
                                 <p class="text-[10px] text-gray-500 font-medium">${m.weekday}</p>
                             </div>
-                            <div class="text-right text-[11px] flex flex-col items-end gap-1">
+                           <div class="text-right text-[11px] flex flex-col items-end gap-1">
                                 <div>${m.duty}</div>
                                 <span class="text-[8px] bg-gray-900 text-gray-500 group-hover:bg-cyan-950 group-hover:text-cyan-400 px-1.5 py-0.2 rounded border border-gray-800 transition">點擊查看 ➔</span>
                             </div>
@@ -351,10 +349,8 @@
                 const sMonth = parseInt(parts[1], 10);
                 const sDay = parseInt(parts[2], 10);
                 const targetDateObj = new Date(sYear, sMonth - 1, sDay);
-
                 const columnMapping = [7, 1, 2, 3, 4, 5, 6]; 
                 const targetColumnIdx = columnMapping[targetDateObj.getDay()];
-
                 const weekDaysChinese = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
                 const targetChineseWeekday = weekDaysChinese[targetDateObj.getDay()];
                 
@@ -364,10 +360,9 @@
 
                 document.getElementById('youth-title-date').innerText = `中長青訓 (${sMonth}月${sDay}日 ${targetChineseWeekday})`;
                 document.getElementById('stars-title-date').innerText = `明日之星 (${sMonth}月${sDay}日 ${targetChineseWeekday})`;
-
                 const youthContainer = document.getElementById('youth-schedule-list');
                 const starsContainer = document.getElementById('stars-schedule-list');
-                youthContainer.innerHTML = '<p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>'; 
+                youthContainer.innerHTML = '<p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>';
                 starsContainer.innerHTML = '<p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>'; 
 
                 const [resAttendance, resProgram, resStars] = await Promise.all([
@@ -375,7 +370,6 @@
                     fetch(`${SPREADSHEET_BASE}&gid=${GID_YOUTH_PROGRAM}`),
                     fetch(`${SPREADSHEET_BASE}&gid=${GID_STARS_PROGRAM}`)
                 ]);
-
                 const textAttendance = await resAttendance.text();
                 const textProgram = await resProgram.text();
                 const textStars = await resStars.text();
@@ -397,10 +391,9 @@
                     if (!row || row.length === 0) continue;
                     const cellA = row[0] ? String(row[0]).trim() : '';
                     if (!cellA) continue;
-
                     if (cleanToNumericFingerprint(cellA) === targetFingerprint) {
                         let youthCoachChinese = row[2] ? String(row[2]).trim().replace(/\r?\n|\r/g, ' ') : ''; 
-                        let youthCoachEnglish = row[3] ? String(row[3]).trim().replace(/\r?\n|\r/g, ' ') : ''; 
+                        let youthCoachEnglish = row[3] ? String(row[3]).trim().replace(/\r?\n|\r/g, ' ') : '';
                         if (youthCoachChinese || youthCoachEnglish) {
                             youthDisplayCoach = (youthCoachChinese && youthCoachEnglish) ? `${youthCoachChinese}, ${youthCoachEnglish}` : (youthCoachChinese || youthCoachEnglish);
                         }
@@ -414,18 +407,16 @@
                         if (starsCoachParts.length > 0) {
                             starsDisplayCoach = starsCoachParts.join(" / ");
                         }
-                        break; 
+                        break;
                     }
                 }
 
-                // 中長青訓課表提取
                 let youthFound = false;
                 let finalYouthContent = "";
                 for (let r = 0; r < rowsProgram.length; r++) {
                     const row = rowsProgram[r];
                     if (!row || row.length <= targetColumnIdx) continue;
                     const cellText = row[targetColumnIdx] ? String(row[targetColumnIdx]).trim() : '';
-
                     if (cellText === sheetDateTag || cellText.startsWith(sheetDateTag) || cellText === slashDateTag) {
                         let tempLines = [];
                         for (let offset = 1; offset < 30; offset++) {
@@ -433,10 +424,9 @@
                             if (nextRowIdx >= rowsProgram.length) break; 
                             const nextRow = rowsProgram[nextRowIdx];
                             if (!nextRow || nextRow.length <= targetColumnIdx) continue;
-                            
                             const targetCellText = nextRow[targetColumnIdx] ? String(nextRow[targetColumnIdx]).trim() : '';
                             if (targetCellText.includes('-') && (targetCellText.includes('月') || targetCellText.includes('LEAVE') || targetCellText.length < 7)) {
-                                if (targetCellText !== cellText && (targetCellText.includes('月') || targetCellText.includes('-'))) break; 
+                                if (targetCellText !== cellText && (targetCellText.includes('月') || targetCellText.includes('-'))) break;
                             }
                             if (targetCellText.length > 0 && !targetCellText.includes('中長青訓')) tempLines.push(targetCellText);
                         }
@@ -448,7 +438,6 @@
                     }
                 }
 
-                // 明日之星流水帳課表提取
                 let starsFound = false;
                 let finalStarsContent = "";
                 for (let r = 0; r < rowsStars.length; r++) {
@@ -456,7 +445,6 @@
                     if (!row || row.length < 1) continue; 
                     const cellA = row[0] ? String(row[0]).trim() : '';
                     if (!cellA) continue;
-
                     if (cleanToNumericFingerprint(cellA) === targetFingerprint) {
                         const cellC = row[2] ? String(row[2]).trim() : '';
                         if (cellC) {
@@ -467,7 +455,6 @@
                     }
                 }
 
-                // UI 渲染
                 if (youthFound && finalYouthContent.trim().length > 0) {
                     const isLeave = finalYouthContent.toUpperCase().includes('LEAVE');
                     youthContainer.innerHTML = `
@@ -520,9 +507,11 @@
         }
 
         function parseRobustCSV(text) {
-            let insideQuote = false; let entries = [[]]; let currentRow = 0; let currentCell = '';
+            let insideQuote = false;
+            let entries = [[]]; let currentRow = 0; let currentCell = '';
             for (let i = 0; i < text.length; i++) {
-                let c = text[i]; let next = text[i+1];
+                let c = text[i];
+                let next = text[i+1];
                 if (c === '"') {
                     if (insideQuote && next === '"') { currentCell += '"'; i++; } else { insideQuote = !insideQuote; }
                 } else if (c === ',' && !insideQuote) {
