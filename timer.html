@@ -341,8 +341,7 @@
         }
         /* 控制圈數顯示的可見性 */
         .lap-info-row {
-            display: none;
-            /* 預設隱藏 */
+            display: none; /* 預設隱藏 */
             align-items: baseline;
             gap: 8px;
         }
@@ -421,8 +420,7 @@
         /* 倒數數字（無動畫，硬切換） */
         /* 說明：倒數數字的樣式，包括大小及陰影。 */
         .countdown-number {
-            font-size: 50vmin;
-            /* 大型 */
+            font-size: 50vmin; /* 大型 */
             color: var(--alert-yellow);
             font-weight: 900;
             line-height: 1;
@@ -516,19 +514,6 @@
             cursor: pointer;
         }
         .btn-icon-sq:active { background: #555; }
-        .btn-settings {
-            width: 45px;
-            height: 45px;
-            background: #333;
-            border: 1px solid #777;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
 
         /* 報告選項下拉菜單 */
         /* 說明：報告選項的下拉菜單樣式，包括定位及陰影。 */
@@ -594,37 +579,6 @@
         .row-stable { color: var(--text-grey); }
         .row-lap-num { color: #fff; }
 
-        /* 行底色配置 */
-        .summary-table tr:nth-child(even) {
-            background-color: #0b0b0b;
-        }
-
-        .summary-footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(to top, rgba(0,0,0,1) 80%, rgba(0,0,0,0));
-            display: flex;
-            justify-content: center;
-            z-index: 3500;
-            padding-bottom: max(15px, env(safe-area-inset-bottom));
-        }
-        .btn-summary-action {
-            background-color: var(--btn-reset-blue);
-            color: #fff;
-            border: 1px solid #fff;
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            text-transform: uppercase;
-        }
-        .btn-summary-action:active { transform: scale(0.95); }
-
         /* --- 畫面3:歷史畫面 --- */
         /* 說明：歷史記錄畫面的容器樣式，包括顯示及填充。 */
         .screen-history {
@@ -676,7 +630,7 @@
         
         /* 按鈕顏色區分 */
         .btn-dl-all { background: var(--status-green); color: #000; }
-        .btn-clear-all { background: #ff4444; color: #fff; }
+        .btn-clear-all { background: #ff4444; color: #fff; } /* 新增：取消/清除數據按鈕樣式 */
 
         .history-list {
             flex: 1;
@@ -713,7 +667,6 @@
         .hist-date { font-size: 0.9rem; color: #aaa; }
         .hist-main { font-size: 1.2rem; font-weight: bold; color: #fff; }
         .hist-meta { font-size: 0.9rem; color: #00bcd4; }
-        
         .toast {
             position: absolute;
             bottom: 15%;
@@ -764,12 +717,9 @@
             </div>
             <div class="header-right"></div>
         </div>
-
         <input type="file" id="audioInput" accept="audio/*" style="display:none;">
         <audio id="countdownAudio" preload="auto" style="display:none;"></audio>
-        
         <button id="topResetBtn" class="btn-mini-reset">Reset</button>
-
         <div id="tapArea" class="tap-area">
             <div class="info-corner top-left">
                 <div class="lap-info-row" id="lapInfoRow">
@@ -783,15 +733,12 @@
                 <div id="totalTimer">00:00.00</div>
                 <div id="runningLapTimer">00:00.00</div>
             </div>
-
             <div id="alertOverlay" class="alert-overlay">
                 <div id="alertText" class="alert-text">10 LAPS LEFT</div>
             </div>
-
             <div id="waitingText" class="waiting-text">
                 TAP ANYWHERE<br>TO START
             </div>
-
             <div id="activeDisplay" style="display:none; width:100%;">
                 <div id="coachDisplay" class="coach-display">--.-</div>
                 <div class="sub-display-container">
@@ -800,7 +747,6 @@
                 </div>
             </div>
         </div>
-
         <div class="floating-action-container">
             <button id="mainBtn" class="action-btn btn-start">START</button>
         </div>
@@ -819,9 +765,9 @@
                 <button id="shareBtn" class="btn-header-share">SHARE</button>
             </div>
         </div>
-
         <div id="reportMenu" class="report-options-menu">
             <div style="color:#aaa; font-size:0.8rem; margin-bottom:5px; font-weight:bold;">REPORT OPTIONS</div>
+           
             <div style="background:#333; padding:5px; border-radius:5px; margin-bottom:5px;">
                 <label class="report-option-item" style="font-weight:bold; color:var(--alert-yellow);">
                     <input type="checkbox" id="optTotalMode"> Use Last Lap Total
@@ -833,53 +779,59 @@
             <label class="report-option-item"><input type="checkbox" id="optDate" checked> Date</label>
             <label class="report-option-item"><input type="checkbox" id="optStartTime" checked> Start Time</label>
             <label class="report-option-item"><input type="checkbox" id="optTotal" checked> Total Time</label>
-            <label class="report-option-item"><input type="checkbox" id="optGear" checked> Gear Data</label>
+            <label class="report-option-item"><input type="checkbox" id="optGear" checked> Gear</label>
             <label class="report-option-item"><input type="checkbox" id="optDist" checked> Distance</label>
-            <label class="report-option-item"><input type="checkbox" id="optLaps" checked> Lap Count</label>
-            <label class="report-option-item"><input type="checkbox" id="optTable" checked> Breakdown Table</label>
-            <label class="report-option-item" style="border-top:1px solid #444; padding-top:5px; margin-top:5px;">
-                <input type="checkbox" id="optAudioToggle" checked> Startup Audio Beep
-            </label>
+            <label class="report-option-item"><input type="checkbox" id="optLaps" checked> Total Laps</label>
+           
+            <div style="border-top:1px solid #444; margin:5px 0;"></div>
+           
+            <label class="report-option-item"><input type="checkbox" id="optTable" checked> Lap Data (List)</label>
+            <label class="report-option-item"><input type="checkbox" id="optAudioToggle" checked> Audio Start</label>
         </div>
-
         <div class="summary-content">
             <table class="summary-table" id="summaryTable">
                 <thead>
                     <tr>
-                        <th>Lap</th>
-                        <th>Split</th>
-                        <th>Total</th>
-                        <th>Diff</th>
+                        <th width="15%">Lap</th>
+                        <th width="35%">Total</th>
+                        <th width="30%">Split</th>
+                        <th width="20%">Diff</th>
                     </tr>
                 </thead>
                 <tbody id="summaryBody"></tbody>
             </table>
         </div>
-
-        <div class="summary-footer">
-            <button id="nextSessionBtn" class="btn-summary-action">Next Session</button>
+        <div class="floating-action-container">
+            <button id="nextSessionBtn" class="action-btn btn-reset-float">NEXT<br>SESSION</button>
         </div>
     </div>
-
+   
     <div id="screenHistory" class="screen-history">
         <div class="history-header">
-            <button id="closeHistoryBtn" class="btn-close-history">⬅</button>
-            <span class="history-title">Saved History</span>
+            <span class="history-title">HISTORY</span>
             <div class="history-actions">
-                <button id="dlAllCsvBtn" class="btn-hist-mini btn-dl-all">💾 CSV All</button>
-                <button id="clearAllBtn" class="btn-hist-mini btn-clear-all">🗑️ Clear</button>
+                <button id="dlAllCsvBtn" class="btn-hist-mini btn-dl-all">📥 ALL CSV</button>
+                <button id="clearAllBtn" class="btn-hist-mini btn-clear-all">🗑️ CLEAR ALL</button>
             </div>
+            <button id="closeHistoryBtn" class="btn-close-history">✕</button>
         </div>
         <div id="historyList" class="history-list"></div>
     </div>
-
-    <div id="toast" class="toast">Shared to clipboard!</div>
+   
+    <div id="toast" class="toast">Data Copied!</div>
 
     <script>
-        // --- 核心變數與狀態管理 ---
-        let isRunning = false;
-        window.isCountingDown = false;
+        // --- 初始化讀取 ---
+        let sessionHistory = [];
+        try {
+            sessionHistory = JSON.parse(localStorage.getItem('wtc_session_history')) || [];
+        } catch (e) {
+            sessionHistory = [];
+        }
+
         let startTime = 0;
+        let isRunning = false;
+        let isAudioMode = true;
         let audioFileLoaded = false;
         let laps = [];
         let timerInterval;
@@ -889,10 +841,20 @@
         let sessionDate = null;
         let audioStartTimeout;
         let countdownTimeouts = [];
-        let sessionHistory = [];
 
-        // 報告選項 
-        let reportOptions = { date: false, startTime: false, total: true, gear: false, dist: false, laps: false, table: true, audioStart: false, totalFromLastLap: false, whatsAppFormat: false };
+        // 報告選項
+        let reportOptions = {
+            date: false,
+            startTime: false,
+            total: true,
+            gear: false,
+            dist: false,
+            laps: false,
+            table: true,
+            audioStart: false,
+            totalFromLastLap: false,
+            whatsAppFormat: false
+        };
 
         const screenTimer = document.getElementById('screenTimer');
         const screenSummary = document.getElementById('screenSummary');
@@ -947,32 +909,50 @@
         const finalTotalTimeEl = document.getElementById('finalTotalTime');
         const summaryGearInfo = document.getElementById('summaryGearInfo');
         const nextSessionBtn = document.getElementById('nextSessionBtn');
+        const shareBtn = document.getElementById('shareBtn');
         const toast = document.getElementById('toast');
 
-        // --- 初始化設定與 LocalStorage 讀取 ---
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedOptions = localStorage.getItem('wtc_report_options_v4');
-            if (savedOptions) {
+        // --- 🟢 Fix Mobile App-Swapping Background Audio Interruption ---
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                console.log("App returned to foreground. Resuming Audio Engine context...");
                 try {
-                    reportOptions = JSON.parse(savedOptions);
-                    optDate.checked = reportOptions.date;
-                    optStartTime.checked = reportOptions.startTime;
-                    optTotal.checked = reportOptions.total;
-                    optGear.checked = reportOptions.gear;
-                    optDist.checked = reportOptions.dist;
-                    optLaps.checked = reportOptions.laps;
-                    optTable.checked = reportOptions.table;
-                    optAudioToggle.checked = reportOptions.audioStart;
-                    optTotalMode.checked = reportOptions.totalFromLastLap;
-                    optWhatsApp.checked = reportOptions.whatsAppFormat;
-                } catch(e) { console.error(e); }
+                    if (window.sharedAudioCtx) {
+                        if (window.sharedAudioCtx.state === 'suspended') {
+                            window.sharedAudioCtx.resume().then(() => {
+                                console.log("AudioContext successfully recovered!");
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error resuming Audio Context on wake:", err);
+                }
             }
-            const savedHistory = localStorage.getItem('wtc_session_history');
-            if (savedHistory) {
-                try { sessionHistory = JSON.parse(savedHistory); } catch(e) { console.error(e); }
-            }
-            updateAudioBtnState();
         });
+
+        // --- 初始化設定及歷史 ---
+        function loadSettings() {
+            const saved = localStorage.getItem('wtc_report_options_v4');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    reportOptions = { ...reportOptions, ...parsed };
+                } catch(e) {}
+            }
+            optDate.checked = reportOptions.date;
+            optStartTime.checked = reportOptions.startTime;
+            optTotal.checked = reportOptions.total;
+            optGear.checked = reportOptions.gear;
+            optDist.checked = reportOptions.dist;
+            optLaps.checked = reportOptions.laps;
+            optTable.checked = reportOptions.table;
+            optAudioToggle.checked = reportOptions.audioStart;
+            optTotalMode.checked = reportOptions.totalFromLastLap;
+            optWhatsApp.checked = reportOptions.whatsAppFormat;
+            
+            summaryTable.style.display = reportOptions.table ? 'table' : 'none';
+            updateAudioBtnState();
+        }
 
         function saveSettings() {
             reportOptions = {
@@ -1023,9 +1003,8 @@
             if (confirm("⚠️ 確定要刪除所有歷史紀錄嗎？此動作無法還原。")) {
                 sessionHistory = [];
                 localStorage.removeItem('wtc_session_history');
-                const listContainer = document.getElementById('historyList');
-                if (listContainer) {
-                    listContainer.innerHTML = '';
+                if (historyListEl) {
+                    historyListEl.innerHTML = '';
                 }
                 showToast("歷史紀錄已清空");
                 console.log("History cleared.");
@@ -1040,46 +1019,51 @@
                 return;
             }
             sessionHistory.forEach(session => {
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                const d = new Date(session.date);
-                const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-                const gearStr = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "";
-                const distStr = session.dist ? `${session.dist}m` : "";
-                let metaArr = [];
-                if(distStr) metaArr.push(distStr);
-                if(gearStr) metaArr.push(gearStr);
-                metaArr.push(`${session.laps.length} Laps`);
-
-                item.innerHTML = `
+                const date = new Date(session.date);
+                const dateStr = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+                const totalStr = formatTime(session.totalTimeRaw || (session.laps.length > 0 ? session.laps[session.laps.length-1].totalTime : 0));
+                
+                const div = document.createElement('div');
+                div.className = "history-item";
+                
+                let metaParts = [];
+                if(session.dist) metaParts.push(`${session.dist}m`);
+                if(session.gearF && session.gearR) metaParts.push(`${session.gearF}x${session.gearR}`);
+                metaParts.push(`${session.laps.length} Laps`);
+                
+                div.innerHTML = `
                     <div class="hist-info">
                         <span class="hist-date">${dateStr}</span>
-                        <span class="hist-main">${formatTime(session.totalTimeRaw)}</span>
-                        <span class="hist-meta">${metaArr.join(' | ')}</span>
+                        <span class="hist-main">${totalStr}</span>
+                        <span class="hist-meta">${metaParts.join(' | ')}</span>
                     </div>
-                    <div style="color:#aaa; font-size:1.2rem;">➔</div>
+                    <div style="font-size:1.2rem; color:#666;">❯</div>
                 `;
-                item.addEventListener('click', () => {
-                    laps = session.laps;
+                
+                div.onclick = () => {
                     sessionDate = session.date;
+                    laps = [...session.laps];
                     gearFrontInput.value = session.gearF || "";
                     gearRearInput.value = session.gearR || "";
                     distInput.value = session.dist || "";
+                    
                     screenHistory.style.display = 'none';
-                    showSummaryScreen();
-                });
-                historyListEl.appendChild(item);
+                    screenTimer.style.display = 'none';
+                    screenSummary.style.display = 'flex';
+                    renderSummaryData();
+                };
+                historyListEl.appendChild(div);
             });
         }
 
         // --- CSV 匯出邏輯 ---
-        function exportCurrentSessionToCSV() {
-            if (laps.length === 0) return;
-            let csvContent = "\uFEFF"; 
-            const d = new Date(sessionDate);
-            csvContent += `WTC Cycle Timer Report\n`;
+        function exportCurrentToCSV() {
+            if(laps.length === 0) return;
+            let csvContent = "\uFEFF";
+            csvContent += `WTC Cycle Timer Session Report\n`;
+            const d = sessionDate ? new Date(sessionDate) : new Date();
             csvContent += `Date,${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}\n`;
-            csvContent += `Start Time,${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}\n`;
+            csvContent += `Time,${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}\n`;
             const gear = getGearString();
             if(gear) csvContent += `Gear,${gear}\n`;
             const dist = distInput.value;
@@ -1109,6 +1093,7 @@
                 const gear = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "N/A";
                 const dist = session.dist ? session.dist + "m" : "N/A";
                 const totalSessionTime = formatTime(session.totalTimeRaw);
+                
                 csvContent += `SESSION ${index + 1}\n`;
                 csvContent += `Date,${dateStr}\n`;
                 csvContent += `Time,${timeStr}\n`;
@@ -1116,6 +1101,7 @@
                 csvContent += `Dist,${dist}\n`;
                 csvContent += `Total,${totalSessionTime}\n`;
                 csvContent += `Lap,Split,Total,Diff\n`;
+                
                 session.laps.forEach(lap => {
                     const split = (lap.splitTime / 1000).toFixed(3);
                     const total = formatTime(lap.totalTime);
@@ -1137,9 +1123,89 @@
             document.body.removeChild(link);
         }
 
-        // --- 核心輔助格式化函數 ---
+        // --- 核心互動元素設定 ---
+        settingsBtn.onclick = (e) => {
+            e.stopPropagation();
+            reportMenu.classList.toggle('show');
+        };
+
+        document.addEventListener('click', (e) => {
+            if (reportMenu.classList.contains('show') && !e.target.closest('#reportMenu') && e.target !== settingsBtn) {
+                reportMenu.classList.remove('show');
+            }
+        });
+
+        function bindTouchClick(el, handler) {
+            if (!el) return;
+            let moved = false;
+            el.addEventListener('touchstart', () => { moved = false; }, {passive: true});
+            el.addEventListener('touchmove', () => { moved = true; }, {passive: true});
+            el.addEventListener('touchend', (e) => {
+                if (!moved) {
+                    e.preventDefault();
+                    handler(e);
+                }
+            });
+            el.addEventListener('click', (e) => {
+                handler(e);
+            });
+        }
+
+        bindTouchClick(historyBtn, () => {
+            renderHistoryList();
+            screenHistory.style.display = 'flex';
+        });
+        bindTouchClick(closeHistoryBtn, () => { screenHistory.style.display = 'none'; });
+        bindTouchClick(csvBtn, exportCurrentToCSV);
+        bindTouchClick(dlAllCsvBtn, exportAllHistoryToCSV);
+
+        // 全螢幕功能
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        if (fullscreenBtn) {
+            bindTouchClick(fullscreenBtn, () => {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.log(`Fullscreen Error: ${err.message}`);
+                            showFallbackAlert();
+                        });
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                    } else {
+                        showFallbackAlert();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            });
+        }
+
+        function showFallbackAlert() {
+            alert("iPhone 或部分設備不支援直接全螢幕 🥲\n\n想完美全螢幕？請撳瀏覽器嘅「分享」掣，然後揀「加入主畫面 (Add to Home Screen)」。\n\n之後喺桌面打開個 App，就會係 100% 完美全螢幕㗎喇！");
+        }
+
+        function updateAudioBtnState() {
+            if (optAudioToggle.checked) {
+                audioBtn.classList.add('active');
+                audioBtn.textContent = "🔊";
+            } else {
+                audioBtn.classList.remove('active');
+                audioBtn.textContent = "🔇";
+            }
+        }
+
+        bindTouchClick(audioBtn, () => {
+            optAudioToggle.checked = !optAudioToggle.checked;
+            saveSettings();
+        });
+
+        // 格式化輔助函數
         function formatTime(ms) {
-            if (ms < 0 || isNaN(ms)) return "00:00.00";
+            if (ms < 0) ms = 0;
             const minutes = Math.floor(ms / 60000);
             const seconds = Math.floor((ms % 60000) / 1000);
             const hundredths = Math.floor((ms % 1000) / 10);
@@ -1147,16 +1213,13 @@
         }
 
         function formatCoachStyle(ms) {
-            if(ms < 0) return "--.-";
-            const sec = ms / 1000;
-            return sec.toFixed(1);
+            const totalSeconds = ms / 1000;
+            return totalSeconds.toFixed(1);
         }
 
-        function formatCoachStyleSummary(ms) {
+        function formatCoachStyleThreeDecimal(ms) {
             const totalSeconds = ms / 1000;
-            const seconds = Math.floor(totalSeconds % 60);
-            const tenths = Math.floor((ms % 1000) / 10) % 10;
-            return `${seconds}.${tenths}`;
+            return totalSeconds.toFixed(3);
         }
 
         function showAlert(message, color) {
@@ -1165,13 +1228,17 @@
             alertText.style.borderColor = color || '#fff';
             alertOverlay.style.display = 'block';
             clearTimeout(alertTimeout);
-            alertTimeout = setTimeout(() => { alertOverlay.style.display = 'none'; }, 2500);
+            alertTimeout = setTimeout(() => {
+                alertOverlay.style.display = 'none';
+            }, 2500);
         }
 
         function showToast(msg) {
             toast.textContent = msg;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
         }
 
         function updateTimerUI() {
@@ -1203,64 +1270,51 @@
                 if (!window.sharedAudioCtx) {
                     window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
-                const audioCtx = window.sharedAudioCtx;
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
+                
+                // 🟢 Force instant background wakeup recovery before scheduling beeps
+                if (window.sharedAudioCtx.state === 'suspended') {
+                    window.sharedAudioCtx.resume();
                 }
+
+                const audioCtx = window.sharedAudioCtx;
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
+                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
+                
                 const freq = isFinal ? 990 : 490;
                 const duration = isFinal ? 0.8 : 0.4;
                 oscillator.type = 'square';
                 
-                // 0.05 秒緩衝 (Buffer) 確保音效流暢不延遲
-                const audioStartTime = audioCtx.currentTime + 0.05;
-                oscillator.frequency.setValueAtTime(freq, audioStartTime);
-                gainNode.gain.setValueAtTime(0, audioStartTime);
-                gainNode.gain.linearRampToValueAtTime(0.5, audioStartTime + 0.01);
-                gainNode.gain.setValueAtTime(0.5, audioStartTime + duration - 0.01);
-                gainNode.gain.linearRampToValueAtTime(0, audioStartTime + duration);
+                // 0.05 秒緩衝 (Buffer) 確保第一下聲唔窒
+                const startAudioTime = audioCtx.currentTime + 0.05;
+                oscillator.frequency.setValueAtTime(freq, startAudioTime);
                 
-                oscillator.start(audioStartTime);
-                oscillator.stop(audioStartTime + duration);
-            } catch(err) {
-                console.error("Internal Synthesizer Audio Error:", err);
+                // 音量控制
+                gainNode.gain.setValueAtTime(0, startAudioTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, startAudioTime + 0.01);
+                gainNode.gain.setValueAtTime(0.5, startAudioTime + duration - 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, startAudioTime + duration);
+                
+                oscillator.start(startAudioTime);
+                oscillator.stop(startAudioTime + duration);
+                
+                // Safari garbage collection cleanup mechanism
+                oscillator.onended = () => {
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                };
+            } catch (e) {
+                console.error("Audio Context Error:", e);
             }
         }
 
-        function updateAudioBtnState() {
-            if (optAudioToggle.checked) {
-                audioBtn.classList.add('active');
-                audioBtn.classList.remove('loading');
-                audioBtn.innerHTML = "🔊";
-            } else {
-                audioBtn.classList.remove('active', 'loading');
-                audioBtn.innerHTML = "🔇";
-            }
-        }
-
-        // --- 核心計時流程控制 ---
+        // --- 觸發計時開始及倒數引擎 ---
         function triggerStart() {
-            // 安全邊緣防錯判定
-            if (window.event && window.event.type === 'touchstart') {
-                const x = window.event.touches[0].clientX;
-                const y = window.event.touches[0].clientY;
-                if (x !== undefined && y !== undefined) {
-                    const screenW = window.innerWidth;
-                    const screenH = window.innerHeight;
-                    const edgeMargin = 60; // 邊緣無效觸發區
-                    if (x < edgeMargin || x > screenW - edgeMargin || y < edgeMargin || y > screenH - edgeMargin) {
-                        console.log("偵測到邊緣點擊 (可能係系統手勢)，忽略！");
-                        return;
-                    }
-                }
-            }
-
             if (window.isCountingDown || isRunning) return;
-
-            // 喚醒共用音效引擎
+            
+            // 手指按下的第一時間，初始化並強制激活共用音效引擎
             try {
                 if (!window.sharedAudioCtx) {
                     window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1268,7 +1322,9 @@
                 if (window.sharedAudioCtx.state === 'suspended') {
                     window.sharedAudioCtx.resume();
                 }
-            } catch (err) { console.log("Audio Resume Error:", err); }
+            } catch (err) {
+                console.log("Audio Engine Pre-wake Error:", err);
+            }
 
             if (optAudioToggle.checked) {
                 window.isCountingDown = true;
@@ -1276,14 +1332,12 @@
                 document.querySelector('.header-left').style.opacity = '0';
                 document.querySelector('.header-left').style.pointerEvents = 'none';
                 
-                // 防干擾鎖定
                 tapArea.style.pointerEvents = 'none';
                 mainBtn.style.pointerEvents = 'none';
                 topResetBtn.style.display = 'flex';
                 
                 const totalSeconds = 5;
                 for (let i = totalSeconds; i >= 0; i--) {
-                    // 緩衝預備時間
                     const delay = (totalSeconds - i) * 1000 + 100;
                     let t = setTimeout(() => {
                         if (!window.isCountingDown) return;
@@ -1295,45 +1349,45 @@
                         } else {
                             playTrackBeep(true);
                             setTimeout(() => {
-                                waitingTextEl.innerHTML = "";
                                 tapArea.style.pointerEvents = 'auto';
                                 mainBtn.style.pointerEvents = 'auto';
-                                startTimer();
+                                startSession();
                             }, 50);
                         }
                     }, delay);
                     countdownTimeouts.push(t);
                 }
             } else {
-                startTimer();
+                startSession();
             }
         }
 
-        function startTimer() {
+        function startSession() {
             window.isCountingDown = false;
             isRunning = true;
             sessionDate = Date.now();
             startTime = Date.now();
             lastLapTime = startTime;
-            lapCount = 0;
             laps = [];
-
+            lapCount = 0;
+            
             waitingTextEl.style.display = 'none';
             activeDisplayEl.style.display = 'block';
             lapInfoRow.style.display = 'flex';
-            topResetBtn.style.display = 'flex';
-
-            document.querySelector('.header-left').style.opacity = '0';
-            document.querySelector('.header-left').style.pointerEvents = 'none';
-
-            mainBtn.textContent = "FINISH";
-            mainBtn.className = "action-btn btn-finish";
-
+            
+            lapCounterEl.textContent = "0";
             coachDisplayEl.textContent = "--.-";
             fullDisplayEl.textContent = "--.---";
-            diffDisplayEl.textContent = "GO!";
-            lapCounterEl.textContent = "0";
-
+            diffDisplayEl.textContent = "";
+            tapArea.className = "tap-area bg-stable";
+            
+            mainBtn.textContent = "FINISH";
+            mainBtn.className = "action-btn btn-finish";
+            topResetBtn.style.display = 'flex';
+            
+            document.querySelector('.header-left').style.opacity = '0';
+            document.querySelector('.header-left').style.pointerEvents = 'none';
+            
             updateLapsRemaining();
             requestAnimationFrame(updateTimerUI);
         }
@@ -1348,7 +1402,6 @@
             
             let diff = 0;
             let colorClass = "bg-stable";
-
             if (laps.length > 0) {
                 const prevLap = laps[laps.length - 1].splitTime;
                 diff = lapDuration - prevLap;
@@ -1391,10 +1444,7 @@
                 if (remaining === 10) showAlert("10 LAPS LEFT", "#ffd600");
                 else if (remaining === 5) showAlert("5 LAPS LEFT", "#ff6d00");
                 else if (remaining === 1) showAlert("LAST LAP", "#ff1744");
-                else if (remaining === 0) {
-                    showAlert("FINISHED", "#ff1744");
-                    finishSession();
-                }
+                else if (remaining === 0) showAlert("FINISHED", "#ff1744");
             }
         }
 
@@ -1402,13 +1452,18 @@
             if (!isRunning) return;
             isRunning = false;
             saveCurrentSession();
-            showSummaryScreen();
+            
+            screenTimer.style.display = 'none';
+            screenSummary.style.display = 'flex';
+            renderSummaryData();
         }
 
         function getGearString() {
             const front = gearFrontInput.value;
             const rear = gearRearInput.value;
-            if (front && rear) { return `${front}x${rear}`; }
+            if (front && rear) {
+                return `${front}x${rear}`;
+            }
             return "";
         }
 
@@ -1420,44 +1475,33 @@
             return formatTime(finalTime);
         }
 
-        function showSummaryScreen() {
-            screenTimer.style.display = 'none';
-            screenSummary.style.display = 'flex';
-            renderSummaryData();
-        }
-
         function renderSummaryData() {
             finalTotalTimeEl.textContent = getTotalTimeDisplay();
-            const gear = getGearString();
-            const dist = distInput.value;
-            let subMeta = [];
-            if(dist) subMeta.push(`DIST: ${dist}m`);
-            if(gear) subMeta.push(`GEAR: ${gear}`);
-            summaryGearInfo.textContent = subMeta.join(' | ');
-
+            const gearInfo = getGearString();
+            summaryGearInfo.textContent = gearInfo ? `Gear: ${gearInfo}` : "";
             summaryBody.innerHTML = "";
+            
             laps.forEach(lap => {
                 const tr = document.createElement('tr');
-                let rowClass = "row-stable";
-                if (lap.lapNum > 1) {
-                    if (lap.status === 'bg-faster') rowClass = "row-faster";
-                    if (lap.status === 'bg-slower') rowClass = "row-slower";
+                let diffText = lap.lapNum === 1 ? "-" : (lap.diff > 0 ? `+${(lap.diff/1000).toFixed(2)}` : (lap.diff/1000).toFixed(2));
+                let rowColorClass = "row-stable";
+                if(lap.lapNum > 1) {
+                    if(lap.status === "bg-faster") rowColorClass = "row-faster";
+                    if(lap.status === "bg-slower") rowColorClass = "row-slower";
                 }
-                const diffSec = (lap.diff / 1000).toFixed(2);
-                const sign = lap.diff > 0 ? "+" : "";
-                const diffDisplay = lap.lapNum === 1 ? "-" : `${sign}${diffSec}s`;
-
+                
+                tr.className = rowColorClass;
                 tr.innerHTML = `
                     <td class="row-lap-num">${lap.lapNum}</td>
-                    <td class="${rowClass}">${(lap.splitTime / 1000).toFixed(3)}</td>
-                    <td style="color:#fff;">${formatTime(lap.totalTime)}</td>
-                    <td class="${rowClass}">${diffDisplay}</td>
+                    <td>${formatTime(lap.totalTime)}</td>
+                    <td>${(lap.splitTime/1000).toFixed(3)}</td>
+                    <td>${diffText}</td>
                 `;
                 summaryBody.appendChild(tr);
             });
         }
 
-        function resetTimerState() {
+        function resetAll() {
             isRunning = false;
             window.isCountingDown = false;
             tapArea.style.pointerEvents = 'auto';
@@ -1472,7 +1516,6 @@
             
             screenSummary.style.display = 'none';
             screenTimer.style.display = 'flex';
-            
             mainBtn.textContent = "START";
             mainBtn.className = "action-btn btn-start";
             
@@ -1484,7 +1527,6 @@
             tapArea.className = "tap-area";
             activeDisplayEl.style.display = 'none';
             waitingTextEl.style.display = 'block';
-            waitingTextEl.innerHTML = "TAP ANYWHERE<br>TO START";
             
             totalTimerEl.textContent = "00:00.00";
             runningLapTimerEl.textContent = "00:00.00";
@@ -1494,7 +1536,7 @@
         }
 
         function getFormattedDate(d) {
-            const date = d ? new Date(d) : new Date();
+            const date = d || new Date();
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = String(date.getFullYear()).slice(-2);
@@ -1502,7 +1544,7 @@
         }
 
         function getFormattedTime(d) {
-            const date = d ? new Date(d) : new Date();
+            const date = d || new Date();
             return date.toLocaleTimeString([], { hour12: false });
         }
 
@@ -1522,118 +1564,40 @@
                 if(reportOptions.date) text += `📅 ${dateStr} ${timeStr}\n`;
                 if(reportOptions.total) text += `⏱️ *Total: ${getTotalTimeDisplay()}*\n`;
                 if(reportOptions.laps) text += `🔄 Laps: ${laps.length}\n`;
-                
                 if (reportOptions.table && laps.length > 0) {
                     text += `\n`;
                     laps.forEach(l => {
                         const split = (l.splitTime / 1000).toFixed(3);
-                        text += `• Lap ${String(l.lapNum).padStart(2, '0')}: *${split}s*\n`;
+                        const diff = l.lapNum === 1 ? "-" : (l.diff > 0 ? `+${(l.diff/1000).toFixed(2)}` : (l.diff/1000).toFixed(2));
+                        text += `L${l.lapNum}: *${split}* (${diff})\n`;
                     });
                 }
             } else {
-                if(reportOptions.dist || reportOptions.gear) {
+                let headerParts = [];
+                if (reportOptions.dist && distInput.value) headerParts.push(`${distInput.value}m`);
+                if (reportOptions.gear) {
                     const gear = getGearString();
-                    text += `WTC Cycle Stats\n`;
-                    if(reportOptions.dist && distInput.value) text += `Distance: ${distInput.value}m `;
-                    if(reportOptions.gear && gear) text += `Gear: ${gear}`;
-                    text += `\n\n`;
+                    if(gear) headerParts.push(gear);
                 }
+                headerParts.push(`${laps.length} Laps`);
+                
+                text += `WTC Cycle Timer Report\n`;
+                text += `${headerParts.join(' | ')}\n`;
                 if(reportOptions.date) text += `Date: ${dateStr} ${timeStr}\n`;
                 if(reportOptions.total) text += `Total Time: ${getTotalTimeDisplay()}\n`;
-                if(reportOptions.laps) text += `Laps: ${laps.length}\n`;
                 
                 if (reportOptions.table && laps.length > 0) {
                     text += `\nLap,Split,Total,Diff\n`;
                     laps.forEach(l => {
                         const split = (l.splitTime / 1000).toFixed(3);
-                        const tot = formatTime(l.totalTime);
-                        const diffSec = (l.diff / 1000).toFixed(2);
-                        const sign = l.diff > 0 ? "+" : "";
-                        const dStr = l.lapNum === 1 ? "-" : `${sign}${diffSec}s`;
-                        text += `${l.lapNum},${split},${tot},${dStr}\n`;
+                        const total = formatTime(l.totalTime);
+                        const diff = l.lapNum === 1 ? "-" : (l.diff > 0 ? `+${(l.diff/1000).toFixed(2)}` : (l.diff/1000).toFixed(2));
+                        text += `${l.lapNum},${split},${total},${diff}\n`;
                     });
                 }
             }
-            return text.trim();
+            return text;
         }
-
-        // --- 全螢幕與 UI 互動事件 ---
-        function toggleFullscreen() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Fullscreen Error: ${err.message}`);
-                        showFallbackAlert();
-                    });
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else {
-                    showFallbackAlert();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-            }
-        }
-
-        function showFallbackAlert() {
-            alert("iPhone 或部分設備不支援直接全螢幕 🥲\n\n想完美全螢幕？請撳瀏覽器嘅「分享」掣，然後揀「加入主畫面 (Add to Home Screen)」。\n\n之後喺桌面打開個 App，就會係 100% 完美全螢幕㗎喇！");
-        }
-
-        // --- 點擊與按鈕事件綁定 ---
-        audioBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            optAudioToggle.checked = !optAudioToggle.checked;
-            saveSettings();
-        });
-
-        fullscreenBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleFullscreen();
-        });
-
-        historyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            renderHistoryList();
-            screenHistory.style.display = 'flex';
-        });
-
-        closeHistoryBtn.addEventListener('click', () => {
-            screenHistory.style.display = 'none';
-        });
-
-        dlAllCsvBtn.addEventListener('click', exportAllHistoryToCSV);
-        csvBtn.addEventListener('click', exportCurrentSessionToCSV);
-
-        settingsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            reportMenu.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!reportMenu.contains(e.target) && e.target !== settingsBtn) {
-                reportMenu.classList.remove('show');
-            }
-        });
-
-        shareBtn.addEventListener('click', () => {
-            const shareText = generateShareText();
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    showToast("已複製報告至剪貼簿！");
-                }).catch(err => {
-                    alert("無法複製，請手動選取複製");
-                });
-            } else {
-                alert("設備不支援自動複製，內容：\n\n" + shareText);
-            }
-        });
-
-        nextSessionBtn.addEventListener('click', resetTimerState);
-        topResetBtn.addEventListener('click', resetTimerState);
 
         mainBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1643,15 +1607,15 @@
 
         function handleTap(e) {
             if (e.target && (
-                e.target.closest('.floating-action-container') ||
-                e.target.closest('.header') ||
-                e.target.closest('.summary-header-bar') ||
-                e.target.closest('.report-options-menu') ||
-                e.target.closest('.screen-history') ||
-                e.target.tagName === 'INPUT' ||
+                e.target.closest('.floating-action-container') || 
+                e.target.closest('.header') || 
+                e.target.closest('.summary-header-bar') || 
+                e.target.closest('.report-options-menu') || 
+                e.target.closest('.screen-history') || 
+                e.target.tagName === 'INPUT' || 
                 e.target.id === 'topResetBtn'
             )) return;
-
+            
             if (!isRunning) {
                 if(e.type === 'touchstart') e.preventDefault();
                 triggerStart();
@@ -1669,30 +1633,38 @@
                 event.preventDefault();
                 const fakeEvent = { target: document.body, type: 'keydown', preventDefault: function() {} };
                 handleTap(fakeEvent);
-                console.log("已成功透過空白鍵觸發 handleTap！");
+                console.log("Space triggered handleTap!");
             }
         });
 
-        // --- 🟢 Fix: Background / Foreground Auto-Wake System ---
-        // 當使用者切換去影相/離開頁面再返回時，手動重啟音頻上下文，確保聲音唔會失蹤。
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-                console.log("App returned to foreground. Recovering web audio pipeline...");
+        bindTouchClick(topResetBtn, resetAll);
+        bindTouchClick(nextSessionBtn, resetAll);
+
+        bindTouchClick(shareBtn, async () => {
+            const text = generateShareText();
+            if (navigator.share) {
                 try {
-                    if (window.sharedAudioCtx && window.sharedAudioCtx.state === 'suspended') {
-                        window.sharedAudioCtx.resume().then(() => {
-                            console.log("Audio Context state synchronized successfully.");
-                        }).catch(err => {
-                            console.warn("Failed to wake audio engine on resume:", err);
-                        });
-                    }
-                } catch (e) {
-                    console.error("Critical Audio Pipeline Error:", e);
+                    await navigator.share({ title: 'WTC Cycle Timer Report', text: text });
+                } catch (err) {
+                    console.log("Native Share error/cancelled, falling back to copy.");
+                    copyToClipboard(text);
                 }
+            } else {
+                copyToClipboard(text);
             }
         });
 
-        // --- 🟢 Service Worker 註冊 ---
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Copied to Clipboard!");
+        }
+
+        // --- 🟢 Service Worker Activation Support ---
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(function() {
                 console.log('Service Worker Registered Successfully.');
@@ -1700,6 +1672,8 @@
                 console.log('Service Worker Registration Failed:', err);
             });
         }
+
+        window.onload = loadSettings;
     </script>
 </body>
 </html>
