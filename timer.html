@@ -1,664 +1,1705 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WTC TT">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text y=%2250%22 x=%2250%22 font-size=%2260%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>⏱️</text></svg>">
-    
-    <title>WTC TT Timer v5.0</title>
-
+    <title>WTC Cycle Timer v6.3</title>
     <style>
         /* --- 全域重設及變數 --- */
+        /* 說明：定義根元素變數，包括顏色主題；重設所有元素的盒模型及點擊高亮效果。 */
         :root {
-            --bg-color: #000000; --text-color: #ffffff;
-            --status-green: #1b5e20; --status-red: #b71c1c;
-            --status-grey: #2a2a2a; --text-grey: #aaaaaa;
-            --btn-start-green: #00e676; --btn-finish-red: #ff1744;
-            --btn-reset-blue: #2979ff; --border-color: #333333;
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --status-green: #1b5e20;
+            --status-red: #b71c1c;
+            --status-grey: #505050;
+            --text-grey: #aaaaaa;
+            --btn-start-green: #00e676;
+            --btn-finish-red: #ff1744;
+            --btn-reset-blue: #2979ff;
+            --btn-share-purple: #651fff;
+            --btn-history-orange: #ff9800;
+            --alert-yellow: #ffd600;
+            --alert-orange: #ff6d00;
+            --alert-red: #ff1744;
+            --lap-running-color: #00e5ff;
+            --audio-active-color: #00e676;
+            --audio-loading-color: #ffeb3b;
         }
-
         * {
-            box-sizing: border-box; -webkit-tap-highlight-color: transparent;
-            user-select: none; -webkit-user-select: none; touch-action: manipulation;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            width: 100%;
         }
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; display: flex; flex-direction: column;
+        /* --- 畫面1: 計時器介面 --- */
+        /* 說明：計時器畫面的主要容器，負責定位及溢出處理。 */
+        .screen-timer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow: hidden;
         }
 
-        /* --- 模式選擇畫面 (設定頁) --- */
-        #setupScreen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); z-index: 100;
-            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-            padding: env(safe-area-inset-top) 20px 20px 20px; overflow-y: auto;
+        /* 1. 標頭區塊 */
+        /* 說明：標頭的樣式，包括定位、漸變背景及互動元素。 */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            min-height: 80px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0));
+            z-index: 500;
+            padding-top: max(10px, env(safe-area-inset-top));
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .header > * { pointer-events: auto; }
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+            transition: opacity 0.2s;
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-right {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            z-index: 600;
+            align-items: flex-start;
         }
 
-        .global-config-panel {
-            background: var(--status-grey); border: 1px solid var(--border-color);
-            border-radius: 15px; padding: 15px; width: 100%; max-width: 450px;
-            display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;
+        /* 輸入欄位樣式 */
+        /* 說明：輸入群組及數字輸入欄位的樣式，包括背景、邊框及文字對齊。 */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 0 1px 2px #000;
+            background: rgba(60,60,60,0.7);
+            padding: 5px 8px;
+            border-radius: 6px;
         }
-        
-        .config-row { display: flex; justify-content: space-between; align-items: center; }
-        .config-input {
-            background: black; color: white; border: 1px solid var(--text-grey);
-            padding: 8px; font-size: 16px; border-radius: 8px; text-align: center;
+        input[type="number"] {
+            background: rgba(30, 30, 30, 1);
+            border: 1px solid #888;
+            color: #fff;
+            padding: 8px 4px;
+            border-radius: 4px;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
         }
-        .config-textarea {
-            width: 100%; height: 70px; background: black; color: white; border: 1px solid var(--text-grey);
-            padding: 10px; font-size: 16px; border-radius: 8px; resize: none; user-select: text; -webkit-user-select: text;
+        .input-gear { width: 60px; }
+        .input-dist { width: 80px; }
+        .input-laps { width: 60px; }
+        .label-text { font-size: 0.8rem; color: #bbb; margin-right: 2px;}
+
+        /* 音頻按鈕 */
+        /* 說明：音頻按鈕的樣式，包括載入及活躍狀態的動畫效果。 */
+        .btn-audio {
+            background: rgba(60, 60, 60, 0.7);
+            border: 1px solid #888;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            margin-left: 5px;
+            transition: all 0.2s;
+            /* iOS 優化：移除默認外觀與點擊高亮 */
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative; /* 為了讓偽元素定位 */
+            user-select: none;
+            touch-action: manipulation;
         }
 
-        /* --- 資料庫狀態區 --- */
-        .db-status-panel {
-            background: rgba(41, 121, 255, 0.15); border: 1px solid var(--btn-reset-blue);
-            border-radius: 10px; padding: 15px; width: 100%; max-width: 450px;
-            text-align: center; margin-bottom: 15px;
+        /* 擴大點擊區域：解決 iOS 需要「斜按」或按不準的問題 */
+        .btn-audio::before, .btn-icon-round::before {
+            content: '';
+            position: absolute;
+            width: 60px; /* 比按鈕本身大，增加感應範圍 */
+            height: 60px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: transparent;
+            z-index: 1;
         }
-        .db-btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-db { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
-        .btn-export { background: var(--btn-reset-blue); color: white; }
-        .btn-clear { background: var(--status-red); color: white; }
 
-        .mode-btn {
-            width: 100%; padding: 18px; margin: 6px 0;
-            font-size: 22px; font-weight: bold; border-radius: 10px;
-            border: none; color: white; cursor: pointer; text-align: center;
+        /* 確保按鈕內的圖標或文字不會攔截點擊事件 */
+        .btn-audio > *, .btn-icon-round > * {
+            pointer-events: none;
         }
-        .mode-start { background-color: var(--status-green); border: 2px solid var(--btn-start-green); }
-        .mode-finish { background-color: var(--status-red); border: 2px solid var(--btn-finish-red); }
 
-        /* --- 主畫面 (計時器/紀錄) 共用 --- */
-        #mainApp { display: none; flex-direction: column; height: 100%; width: 100%; }
-
-        .top-bar {
-            position: relative; z-index: 10; background-color: var(--bg-color);
-            min-height: 60px; display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 15px; border-bottom: 1px solid var(--border-color);
-            font-size: 16px; color: var(--text-grey);
-            padding-top: calc(env(safe-area-inset-top) + 10px);
+        .btn-audio.loading {
+            border-color: var(--audio-loading-color);
+            color: var(--audio-loading-color);
+            animation: pulse-border 1.5s infinite;
         }
-        
-        .action-btn {
-            background: var(--status-grey); border: 1px solid #555; color: var(--text-color);
-            border-radius: 8px; padding: 8px 12px; font-size: 14px; cursor: pointer; font-weight: bold;
-        }
-        .action-btn:active { background: #444; }
 
+        .btn-audio.active {
+            background: rgba(0, 50, 0, 0.9);
+            color: var(--audio-active-color);
+            border-color: var(--audio-active-color);
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 235, 59, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0); }
+        }
+
+        /* 歷史及重設按鈕 */
+        /* 說明：圓形圖示按鈕的樣式，包括顏色及邊框。 */
+        .btn-icon-round {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: rgba(40,40,40,0.9);
+            color: #fff;
+            margin-left: 5px;
+            /* iOS 優化 */
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        #historyBtn {
+            color: var(--btn-history-orange);
+            border-color: var(--btn-history-orange);
+            border-radius: 6px;
+        }
+
+        /* 重設按鈕 */
+        /* 說明：小型重設按鈕的樣式，包括定位及互動效果。 */
+        .btn-mini-reset {
+            background: rgba(40, 40, 40, 0.95);
+            border: 1px solid #999;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            touch-action: manipulation;
+            padding: 0 15px;
+            height: 50px;
+            min-width: 90px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+            background-color: #d32f2f;
+            border-color: #ff5252;
+           
+            position: absolute;
+            left: 10px;
+            top: max(10px, env(safe-area-inset-top));
+            z-index: 2000;
+        }
+       
+        .btn-mini-reset:active { transform: scale(0.95); opacity: 0.9; }
+        .btn-header-share {
+            background: var(--btn-share-purple);
+            border: 1px solid #fff;
+            padding: 0 15px;
+            height: 45px;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+       
+        .btn-header-share:active {
+            transform: scale(0.95);
+            background-color: #512da8;
+        }
+
+        /* 2. 主要點擊區域 */
+        /* 說明：點擊區域的樣式，用於開始或記錄圈數。 */
         .tap-area {
-            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background-color: var(--bg-color); transition: background-color 0.1s ease;
-            position: relative; z-index: 1; min-height: 150px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            padding-top: 0;
         }
-        .tap-area:active { background-color: #1a1a1a; }
-        
-        .main-display {
-            font-size: 28vw; font-weight: 800; font-variant-numeric: tabular-nums;
-            line-height: 1; text-align: center; transition: font-size 0.3s;
-        }
-        .main-display.finish-mode { font-size: 16vw; }
-        
-        .sub-display {
-            font-size: 8vw; color: var(--text-grey); margin-top: 5px; font-variant-numeric: tabular-nums;
-        }
-        .sub-display.finish-mode { font-size: 5vw; }
 
-        .info-text { font-size: 24px; color: var(--btn-start-green); margin-bottom: 10px; font-weight: bold; }
+        /* 3. 浮動動作按鈕 */
+        /* 說明：浮動按鈕的容器及按鈕樣式，包括開始、結束及重設。 */
+        .floating-action-container {
+            position: absolute;
+            bottom: 20%;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+        }
+        .action-btn {
+            width: 100px;
+            height: 100px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1.1;
+            padding: 10px;
+        }
+       
+        .action-btn:active { transform: scale(0.9); }
+        .btn-start { background-color: var(--btn-start-green); color: #000; border: 3px solid #fff; }
+        .btn-finish { background-color: var(--btn-finish-red); color: #fff; border: 3px solid #fff; }
+        .btn-reset-float { background-color: var(--btn-reset-blue); color: #fff; border: 3px solid #fff; font-size: 1.2rem; }
 
-        .records-area {
-            height: 45%; background: var(--status-grey); border-top: 1px solid var(--border-color);
-            display: flex; flex-direction: column; z-index: 5;
+        /* 顯示元素 */
+        /* 說明：資訊顯示元素的樣式，包括定位及文字陰影。 */
+        .info-corner {
+            position: absolute;
+            font-family: monospace;
+            opacity: 0.7;
+            z-index: 5;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        .records-header {
-            display: flex; justify-content: space-between; padding: 10px 15px;
-            border-bottom: 1px solid var(--border-color); align-items: center;
+       
+        /* 左上角容器 */
+        /* 說明：左上角顯示圈數及品牌文字。 */
+        .top-left {
+            top: 150px;
+            left: 20px;
+            color: #fff;
+            line-height: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
-        .records-list { flex-grow: 1; overflow-y: auto; padding: 0 10px; }
+        /* 控制圈數顯示的可見性 */
+        .lap-info-row {
+            display: none;
+            /* 預設隱藏 */
+            align-items: baseline;
+            gap: 8px;
+        }
+        #lapCounter {
+            font-size: 10vmin;
+            font-weight: bold;
+            line-height: 0.9;
+        }
+        #lapsRemaining {
+            font-size: 4vmin;
+            color: var(--alert-yellow);
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .branding-text {
+            font-size: 10px;
+            font-family: sans-serif;
+            color: #888;
+            font-style: italic;
+            margin-top: 5px;
+            opacity: 0.8;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+       
+        /* 右上角用於運行圈時間 */
+        /* 說明：右上角顯示總時間及運行圈時間。 */
+        .top-right {
+            top: 150px;
+            right: 20px;
+            text-align: right;
+        }
+        #totalTimer { font-size: 5vmin; color: #fff; display: block; font-weight: bold; }
+        #runningLapTimer { font-size: 4vmin; color: var(--lap-running-color); display: block; margin-top: 5px; font-weight: bold; }
+        .coach-display {
+            font-size: 45vmin;
+            font-weight: 900;
+            line-height: 0.9;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.05em;
+            margin-top: -5vh;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            padding-right: 10vw;
+        }
+        .sub-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 0;
+            padding-right: 10vw;
+        }
+        .full-display { font-size: 8vmin; font-family: monospace; opacity: 0.8; font-weight: bold; }
+       
+        .diff-display {
+            font-size: 6vmin;
+            font-weight: bold;
+            margin-top: 1vh;
+            padding: 0.5vmin 2vmin;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            min-height: 7vmin;
+        }
+        .waiting-text {
+            font-size: 8vmin;
+            color: #888;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.2;
+            padding-right: 10vw;
+        }
+       
+        /* 倒數數字（無動畫，硬切換） */
+        /* 說明：倒數數字的樣式，包括大小及陰影。 */
+        .countdown-number {
+            font-size: 50vmin;
+            /* 大型 */
+            color: var(--alert-yellow);
+            font-weight: 900;
+            line-height: 1;
+            display: block;
+            text-shadow: 0 0 10px #000;
+        }
+
+        /* 警示覆蓋層 */
+        /* 說明：警示文字的覆蓋層樣式，包括定位及邊框。 */
+        .alert-overlay {
+            position: absolute;
+            top: 75%;
+            transform: translateY(-50%);
+            left: 20px;
+            width: auto;
+            pointer-events: none;
+            z-index: 25;
+            display: none;
+        }
+        .alert-text {
+            font-size: 3.5vmin;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            background: rgba(0,0,0,0.85);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* 動態背景 */
+        /* 說明：根據狀態變更背景顏色。 */
+        .bg-faster { background-color: var(--status-green) !important; }
+        .bg-slower { background-color: var(--status-red) !important; }
+        .bg-stable { background-color: var(--status-grey) !important; }
+
+        /* --- 畫面2: 摘要介面 --- */
+        /* 說明：摘要畫面的容器樣式，包括顯示及背景。 */
+        .screen-summary {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 2000;
+        }
+        .summary-header-bar {
+            flex: 0 0 90px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111;
+            border-bottom: 2px solid #333;
+            z-index: 3000;
+            padding-top: max(10px, env(safe-area-inset-top));
+        }
+        .summary-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .summary-label { font-size: 0.8rem; color: #888; }
+        .summary-total { font-size: 1.5rem; font-weight: bold; color: #fff; font-family: monospace; }
+        .summary-sub { font-size: 0.9rem; color: #00bcd4; font-weight: bold; margin-top: 2px;}
+
+        /* 標頭右側: 分享 + 設定 + CSV */
+        /* 說明：摘要標頭右側按鈕群組。 */
+        .summary-header-right {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            z-index: 3001;
+            align-items: center;
+        }
+        .btn-icon-sq {
+            width: 45px;
+            height: 45px;
+            background: #333;
+            border: 1px solid #777;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .btn-icon-sq:active { background: #555; }
+        .btn-settings {
+            width: 45px;
+            height: 45px;
+            background: #333;
+            border: 1px solid #777;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* 報告選項下拉菜單 */
+        /* 說明：報告選項的下拉菜單樣式，包括定位及陰影。 */
+        .report-options-menu {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 4000;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            min-width: 180px;
+        }
+       
+        .report-options-menu.show { display: flex; }
+        .report-option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #eee;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .report-option-item input {
+            transform: scale(1.3);
+            margin: 0;
+        }
+
+        /* 可滾動內容 */
+        /* 說明：摘要內容的滾動區域樣式。 */
+        .summary-content {
+            flex: 1;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            padding: 0;
+            padding-bottom: 30vh;
+        }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 4vmin; }
+        .summary-table th {
+            position: sticky;
+            top: 0;
+            background: #222;
+            color: #aaa;
+            padding: 10px;
+            text-transform: uppercase;
+            font-size: 3vmin;
+            z-index: 15;
+        }
+        .summary-table td {
+            padding: 1.5vh 1vw;
+            text-align: center;
+            border-bottom: 1px solid #222;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .row-faster { color: #69f0ae; }
+        .row-slower { color: #ff5252; }
+        .row-stable { color: var(--text-grey); }
+        .row-lap-num { color: #fff; }
+
+        /* 行底色配置 */
+        .summary-table tr:nth-child(even) {
+            background-color: #0b0b0b;
+        }
+
+        .summary-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,1) 80%, rgba(0,0,0,0));
+            display: flex;
+            justify-content: center;
+            z-index: 3500;
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+        }
+        .btn-summary-action {
+            background-color: var(--btn-reset-blue);
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+        }
+        .btn-summary-action:active { transform: scale(0.95); }
+
+        /* --- 畫面3:歷史畫面 --- */
+        /* 說明：歷史記錄畫面的容器樣式，包括顯示及填充。 */
+        .screen-history {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 5000;
+            flex-direction: column;
+            padding-top: max(10px, env(safe-area-inset-top));
+        }
+        .history-header {
+            flex: 0 0 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 1px solid #333;
+            background: #111;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .history-title { font-size: 1.2rem; font-weight: bold; color: #aaa; }
+        .btn-close-history { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 10px;}
+        
+
+        /* 小型動作按鈕 */
+        /* 說明：歷史畫面中的小型按鈕樣式。 */
+        .btn-hist-mini {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            touch-action: manipulation;
+        }
+        .btn-hist-mini:active { transform: scale(0.95); opacity: 0.9; }
+        
+        /* 按鈕顏色區分 */
+        .btn-dl-all { background: var(--status-green); color: #000; }
+        .btn-clear-all { background: #ff4444; color: #fff; }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            padding-bottom: 50px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .history-item {
+            background: #222;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
         .record-item {
-            display: flex; align-items: center; padding: 12px 5px;
-            border-bottom: 1px solid #444; gap: 8px;
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #222;
+            font-family: monospace;
         }
+        .record-date { color: #888; font-size: 0.9rem; }
+        .record-time { color: #00ff00; font-weight: bold; font-size: 1.1rem; }
         
-        .col-seq { width: 35px; color: var(--text-grey); font-size: 16px; }
-        .col-tod { width: 95px; font-size: 16px; font-variant-numeric: tabular-nums; }
-        .col-bib { 
-            width: 60px; background: #111; color: #fff; border: 1px solid #555;
-            border-radius: 5px; padding: 8px 5px; text-align: center; font-size: 18px; font-weight: bold;
-            user-select: text; -webkit-user-select: text;
+        .history-item:active { background: #333; }
+        
+        .hist-info { display: flex; flex-direction: column; gap: 4px; }
+        .hist-date { font-size: 0.9rem; color: #aaa; }
+        .hist-main { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .hist-meta { font-size: 0.9rem; color: #00bcd4; }
+        
+        .toast {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            display: none;
+            z-index: 9999;
+            width: max-content;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            font-size: 1.2rem;
         }
-        .col-net { 
-            flex-grow: 1; text-align: right; font-size: 18px; font-weight: bold; 
-            font-variant-numeric: tabular-nums; color: var(--text-grey);
-        }
-
-        .hidden { display: none !important; }
-
-/* 強制允許輸入與點擊，突破全螢幕或 iOS 的選取限制 */
-input, textarea {
-    user-select: auto !important;
-    -webkit-user-select: auto !important;
-    touch-action: auto !important;
-    pointer-events: auto !important;
-}
     </style>
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <div id="screenTimer" class="screen-timer">
+        <div id="mainHeader" class="header">
+            <div class="header-left">
+                <div class="header-row">
+                    <div class="input-group">
+                        <span class="label-text">GEAR</span>
+                        <input type="number" id="gearFront" class="input-gear" placeholder="F" value="">
+                        <span style="color:#888;">x</span>
+                        <input type="number" id="gearRear" class="input-gear" placeholder="R" value="">
+                    </div>
+                    <div class="input-group">
+                        <span class="label-text">DIST</span>
+                        <input type="number" id="distInput" class="input-dist" placeholder="m" value="">
+                        <span style="font-size:0.7rem;">m</span>
+                    </div>
+                </div>
+                <div class="header-row">
+                    <div class="input-group">
+                        <span class="label-text">LAPS</span>
+                        <input type="number" id="totalLapsInput" class="input-laps" placeholder="">
+                    </div>
+                    <button id="audioBtn" class="btn-audio">🎵</button>
+                    <button id="historyBtn" class="btn-icon-round">📜</button>
+                    <button id="fullscreenBtn" class="btn-icon-round">⛶</button>
+                </div>
+            </div>
+            <div class="header-right"></div>
+        </div>
 
-    <div id="setupScreen">
-        <h1 style="margin-bottom: 5px; margin-top: 10px;">公路計時賽 (TT)</h1>
-        <p style="color: var(--text-grey); margin-bottom: 15px;">v5.0 </p>
+        <input type="file" id="audioInput" accept="audio/*" style="display:none;">
+        <audio id="countdownAudio" preload="auto" style="display:none;"></audio>
         
-        <div class="global-config-panel">
-            <div class="config-row">
-                <label style="font-size:16px; font-weight:bold;">首位發車時間:</label>
-                <input type="time" id="globalFirstTime" class="config-input" step="1" value="10:00:00">
-            </div>
-            <div class="config-row">
-                <label style="font-size:16px; font-weight:bold;">發車間距(秒):</label>
-                <input type="number" id="globalInterval" class="config-input" value="60" style="width: 80px;">
-            </div>
-            <div style="margin-top: 5px;">
-                <label style="font-size:14px; color: var(--btn-start-green); font-weight:bold;">車手發車名單 (按順序輸入):</label>
-                <textarea id="globalBibs" class="config-textarea" placeholder="例如: 101, 102, 103... (選填)"></textarea>
-            </div>
-        </div>
-
-        <div class="db-status-panel">
-            <div style="font-size: 18px; font-weight: bold; color: white;">💾 本機暫存記錄</div>
-            <div id="dbRecordCount" style="color: var(--btn-start-green); margin-top: 5px; font-size: 16px;">已存衝線記錄: 0 筆</div>
-            <div class="db-btn-group">
-                <button class="btn-db btn-export" onclick="exportCSV()">匯出 CSV</button>
-                <button class="btn-db btn-clear" onclick="clearLocalData()">清除記錄</button>
-            </div>
-        </div>
-        
-        <div style="width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 5px;">
-            <button class="mode-btn mode-start" onclick="startApp('start')">🏁 進入 起點發車</button>
-            <button class="mode-btn mode-finish" onclick="startApp('finish')">⏱️ 進入 終點衝線</button>
-        </div>
-    </div>
-
-    <div id="mainApp">
-        <div class="top-bar">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <button class="action-btn" onpointerdown="goBack(event)">⬅️ 返回</button>
-                <button class="action-btn" onpointerdown="toggleFullScreen(event)">🔲 全螢幕</button>
-            </div>
-            <span id="systemClock">00:00:00</span>
-        </div>
+        <button id="topResetBtn" class="btn-mini-reset">Reset</button>
 
         <div id="tapArea" class="tap-area">
-            <div id="riderInfo" class="info-text hidden">等待設定...</div>
-            <div id="mainDisplay" class="main-display">00:00</div>
-            <div id="subDisplay" class="sub-display">.000</div>
+            <div class="info-corner top-left">
+                <div class="lap-info-row" id="lapInfoRow">
+                    <div id="lapCounter">0</div>
+                </div>
+                <div id="lapsRemaining"></div>
+                <div class="branding-text">by Woody Wong v6.3</div>
+            </div>
+           
+            <div class="info-corner top-right">
+                <div id="totalTimer">00:00.00</div>
+                <div id="runningLapTimer">00:00.00</div>
+            </div>
+
+            <div id="alertOverlay" class="alert-overlay">
+                <div id="alertText" class="alert-text">10 LAPS LEFT</div>
+            </div>
+
+            <div id="waitingText" class="waiting-text">
+                TAP ANYWHERE<br>TO START
+            </div>
+
+            <div id="activeDisplay" style="display:none; width:100%;">
+                <div id="coachDisplay" class="coach-display">--.-</div>
+                <div class="sub-display-container">
+                    <div id="fullDisplay" class="full-display">--.---</div>
+                    <div id="diffDisplay" class="diff-display"></div>
+                </div>
+            </div>
         </div>
 
-        <div id="finishRecords" class="records-area hidden">
-            <div class="records-header">
-                <span style="font-size: 14px; color: var(--text-grey);">名次 | 衝線時間(TOD) | 運動員號碼 | 淨時間(Net)</span>
-            </div>
-            <div id="recordsList" class="records-list">
-                </div>
+        <div class="floating-action-container">
+            <button id="mainBtn" class="action-btn btn-start">START</button>
         </div>
     </div>
 
+    <div id="screenSummary" class="screen-summary">
+        <div class="summary-header-bar">
+            <div class="summary-info">
+                <span class="summary-label">TOTAL TIME</span>
+                <span id="finalTotalTime" class="summary-total">00:00.000</span>
+                <span id="summaryGearInfo" class="summary-sub"></span>
+            </div>
+            <div class="summary-header-right">
+                <button id="csvBtn" class="btn-icon-sq" title="Download CSV">💾</button>
+                <button id="settingsBtn" class="btn-settings">⚙️</button>
+                <button id="shareBtn" class="btn-header-share">SHARE</button>
+            </div>
+        </div>
 
-   <script>
-        // --- 變數宣告區 ---
-        let currentMode = '';
-        let audioCtx;
-        let animationFrameId;
-        let wakeLock = null;
-        
-        let configLocked = false;
-        let nextTargetTime = null;
-        let intervalMs = 60000;
-        let lastBeepSec = -1;
-        
-        let globalBibOrder = [];   
-        let currentStartIdx = 0;   
-        
-        let finishData = [];
-        let seqNum = 1;
-        let startProfiles = {};    
-        let finishModeActive = false;
+        <div id="reportMenu" class="report-options-menu">
+            <div style="color:#aaa; font-size:0.8rem; margin-bottom:5px; font-weight:bold;">REPORT OPTIONS</div>
+            <div style="background:#333; padding:5px; border-radius:5px; margin-bottom:5px;">
+                <label class="report-option-item" style="font-weight:bold; color:var(--alert-yellow);">
+                    <input type="checkbox" id="optTotalMode"> Use Last Lap Total
+                </label>
+                <label class="report-option-item" style="font-weight:bold; color:#25D366;">
+                    <input type="checkbox" id="optWhatsApp"> WhatsApp Format
+                </label>
+            </div>
+            <label class="report-option-item"><input type="checkbox" id="optDate" checked> Date</label>
+            <label class="report-option-item"><input type="checkbox" id="optStartTime" checked> Start Time</label>
+            <label class="report-option-item"><input type="checkbox" id="optTotal" checked> Total Time</label>
+            <label class="report-option-item"><input type="checkbox" id="optGear" checked> Gear Data</label>
+            <label class="report-option-item"><input type="checkbox" id="optDist" checked> Distance</label>
+            <label class="report-option-item"><input type="checkbox" id="optLaps" checked> Lap Count</label>
+            <label class="report-option-item"><input type="checkbox" id="optTable" checked> Breakdown Table</label>
+            <label class="report-option-item" style="border-top:1px solid #444; padding-top:5px; margin-top:5px;">
+                <input type="checkbox" id="optAudioToggle" checked> Startup Audio Beep
+            </label>
+        </div>
 
-        // 【新增】記錄網絡時間與本地時間的誤差
-        let timeOffsetMs = 0;
+        <div class="summary-content">
+            <table class="summary-table" id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>Lap</th>
+                        <th>Split</th>
+                        <th>Total</th>
+                        <th>Diff</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryBody"></tbody>
+            </table>
+        </div>
 
-        // --- 模組 1: Local Storage 資料庫讀寫 與 網絡時間同步 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadLocalData();
-            syncNetworkTime(); // 網頁載入時同步時間
+        <div class="summary-footer">
+            <button id="nextSessionBtn" class="btn-summary-action">Next Session</button>
+        </div>
+    </div>
+
+    <div id="screenHistory" class="screen-history">
+        <div class="history-header">
+            <button id="closeHistoryBtn" class="btn-close-history">⬅</button>
+            <span class="history-title">Saved History</span>
+            <div class="history-actions">
+                <button id="dlAllCsvBtn" class="btn-hist-mini btn-dl-all">💾 CSV All</button>
+                <button id="clearAllBtn" class="btn-hist-mini btn-clear-all">🗑️ Clear</button>
+            </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+    </div>
+
+    <div id="toast" class="toast">Shared to clipboard!</div>
+
+    <script>
+        // --- 核心變數與狀態管理 ---
+        let isRunning = false;
+        window.isCountingDown = false;
+        let startTime = 0;
+        let audioFileLoaded = false;
+        let laps = [];
+        let timerInterval;
+        let lastLapTime = 0;
+        let lapCount = 0;
+        let alertTimeout;
+        let sessionDate = null;
+        let audioStartTimeout;
+        let countdownTimeouts = [];
+        let sessionHistory = [];
+
+        // 報告選項 
+        let reportOptions = { date: false, startTime: false, total: true, gear: false, dist: false, laps: false, table: true, audioStart: false, totalFromLastLap: false, whatsAppFormat: false };
+
+        const screenTimer = document.getElementById('screenTimer');
+        const screenSummary = document.getElementById('screenSummary');
+        const screenHistory = document.getElementById('screenHistory');
+        const mainHeader = document.getElementById('mainHeader');
+        const mainBtn = document.getElementById('mainBtn');
+        const topResetBtn = document.getElementById('topResetBtn');
+        const tapArea = document.getElementById('tapArea');
+        const audioBtn = document.getElementById('audioBtn');
+        const audioInput = document.getElementById('audioInput');
+        const countdownAudio = document.getElementById('countdownAudio');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const reportMenu = document.getElementById('reportMenu');
+        const summaryTable = document.getElementById('summaryTable');
+        const waitingTextEl = document.getElementById('waitingText');
+        const historyBtn = document.getElementById('historyBtn');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+        const historyListEl = document.getElementById('historyList');
+        const csvBtn = document.getElementById('csvBtn');
+        const dlAllCsvBtn = document.getElementById('dlAllCsvBtn');
+
+        // 輸入
+        const totalLapsInput = document.getElementById('totalLapsInput');
+        const gearFrontInput = document.getElementById('gearFront');
+        const gearRearInput = document.getElementById('gearRear');
+        const distInput = document.getElementById('distInput');
+
+        // 核取方塊
+        const optDate = document.getElementById('optDate');
+        const optStartTime = document.getElementById('optStartTime');
+        const optTotal = document.getElementById('optTotal');
+        const optGear = document.getElementById('optGear');
+        const optDist = document.getElementById('optDist');
+        const optLaps = document.getElementById('optLaps');
+        const optTable = document.getElementById('optTable');
+        const optAudioToggle = document.getElementById('optAudioToggle');
+        const optTotalMode = document.getElementById('optTotalMode');
+        const optWhatsApp = document.getElementById('optWhatsApp');
+
+        const lapCounterEl = document.getElementById('lapCounter');
+        const lapsRemainingEl = document.getElementById('lapsRemaining');
+        const lapInfoRow = document.getElementById('lapInfoRow');
+        const totalTimerEl = document.getElementById('totalTimer');
+        const runningLapTimerEl = document.getElementById('runningLapTimer');
+        const activeDisplayEl = document.getElementById('activeDisplay');
+        const coachDisplayEl = document.getElementById('coachDisplay');
+        const fullDisplayEl = document.getElementById('fullDisplay');
+        const diffDisplayEl = document.getElementById('diffDisplay');
+        const alertOverlay = document.getElementById('alertOverlay');
+        const alertText = document.getElementById('alertText');
+        const summaryBody = document.getElementById('summaryBody');
+        const finalTotalTimeEl = document.getElementById('finalTotalTime');
+        const summaryGearInfo = document.getElementById('summaryGearInfo');
+        const nextSessionBtn = document.getElementById('nextSessionBtn');
+        const toast = document.getElementById('toast');
+
+        // --- 初始化設定與 LocalStorage 讀取 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedOptions = localStorage.getItem('wtc_report_options_v4');
+            if (savedOptions) {
+                try {
+                    reportOptions = JSON.parse(savedOptions);
+                    optDate.checked = reportOptions.date;
+                    optStartTime.checked = reportOptions.startTime;
+                    optTotal.checked = reportOptions.total;
+                    optGear.checked = reportOptions.gear;
+                    optDist.checked = reportOptions.dist;
+                    optLaps.checked = reportOptions.laps;
+                    optTable.checked = reportOptions.table;
+                    optAudioToggle.checked = reportOptions.audioStart;
+                    optTotalMode.checked = reportOptions.totalFromLastLap;
+                    optWhatsApp.checked = reportOptions.whatsAppFormat;
+                } catch(e) { console.error(e); }
+            }
+            const savedHistory = localStorage.getItem('wtc_session_history');
+            if (savedHistory) {
+                try { sessionHistory = JSON.parse(savedHistory); } catch(e) { console.error(e); }
+            }
+            updateAudioBtnState();
         });
 
-        // 【新增進階版】同步網絡時間：連續對準 5 次，取最準確（延遲最低）的一次
-        async function syncNetworkTime() {
-            console.log("⏳ 開始精確同步網絡時間...");
-            let bestOffset = 0;
-            let lowestLatency = Infinity;
-
-            // 嘗試同步 5 次
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const startFetch = Date.now();
-                    // 加上 ?nocache 防止瀏覽器快取 (Cache) 舊時間
-                    const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Hong_Kong?nocache=' + startFetch);
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const networkTime = new Date(data.datetime).getTime();
-                        const endFetch = Date.now();
-                        const latency = (endFetch - startFetch) / 2;
-                        
-                        // 只保留來回速度最快（延遲最低）的那一次計算結果
-                        if (latency < lowestLatency) {
-                            lowestLatency = latency;
-                            bestOffset = networkTime - (endFetch - latency);
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`⚠️ 第 ${i+1} 次連線失敗`);
-                }
-            }
-
-            if (lowestLatency !== Infinity) {
-                timeOffsetMs = bestOffset;
-                console.log(`✅ 精準對時完成！最低單程延遲: ${lowestLatency}ms, 最終調整時差: ${timeOffsetMs}ms`);
-            } else {
-                console.warn("❌ 完全無法獲取網絡時間，將使用本機系統時間。");
-                timeOffsetMs = 0;
-            }
-        }
-
-        // 【新增】獲取經過校準的當前時間
-        function getNow() {
-            return new Date(Date.now() + timeOffsetMs);
-        }
-
-        function saveLocalData() {
-            const data = {
-                globalFirstTime: document.getElementById('globalFirstTime').value,
-                globalInterval: document.getElementById('globalInterval').value,
-                globalBibs: document.getElementById('globalBibs').value,
-                globalBibOrder: globalBibOrder,
-                finishData: finishData,
-                seqNum: seqNum,
-                startProfiles: startProfiles
+        function saveSettings() {
+            reportOptions = {
+                date: optDate.checked,
+                startTime: optStartTime.checked,
+                total: optTotal.checked,
+                gear: optGear.checked,
+                dist: optDist.checked,
+                laps: optLaps.checked,
+                table: optTable.checked,
+                audioStart: optAudioToggle.checked,
+                totalFromLastLap: optTotalMode.checked,
+                whatsAppFormat: optWhatsApp.checked
             };
-            localStorage.setItem('wtcIttDataV4', JSON.stringify(data));
-            updateDbStatus();
-        }
-
-        function loadLocalData() {
-            const saved = localStorage.getItem('wtcIttDataV4');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    if(data.globalFirstTime) document.getElementById('globalFirstTime').value = data.globalFirstTime;
-                    if(data.globalInterval) document.getElementById('globalInterval').value = data.globalInterval;
-                    if(data.globalBibs) document.getElementById('globalBibs').value = data.globalBibs;
-                    
-                    globalBibOrder = data.globalBibOrder || [];
-                    finishData = data.finishData || [];
-                    seqNum = data.seqNum || 1;
-                    startProfiles = data.startProfiles || {};
-                } catch(e) { console.error("Data load error", e); }
-            }
-            updateDbStatus();
-        }
-
-        function clearLocalData() {
-            if (confirm("⚠️ 警告：這將會刪除所有已儲存的發車名單及衝線記錄，無法復原！確定嗎？")) {
-                localStorage.removeItem('wtcIttDataV4');
-                finishData = [];
-                seqNum = 1;
-                startProfiles = {};
-                globalBibOrder = [];
-                document.getElementById('globalBibs').value = '';
-                updateDbStatus();
-                alert("🗑️ 記錄已全部清除！");
+            localStorage.setItem('wtc_report_options_v4', JSON.stringify(reportOptions));
+            summaryTable.style.display = reportOptions.table ? 'table' : 'none';
+            updateAudioBtnState();
+            if(screenSummary.style.display === 'flex') {
+                renderSummaryData();
             }
         }
 
-        function updateDbStatus() {
-            document.getElementById('dbRecordCount').innerText = `已存衝線記錄: ${finishData.length} 筆`;
+        [optDate, optStartTime, optTotal, optGear, optDist, optLaps, optTable, optAudioToggle, optTotalMode, optWhatsApp].forEach(el => {
+            el.addEventListener('change', saveSettings);
+        });
+
+        // --- 歷史邏輯 ---
+        function saveCurrentSession() {
+            if (laps.length === 0) return;
+            const session = {
+                id: Date.now(),
+                date: sessionDate,
+                laps: [...laps],
+                gearF: gearFrontInput.value,
+                gearR: gearRearInput.value,
+                dist: distInput.value,
+                totalTimeRaw: Date.now() - startTime
+            };
+            if(laps.length > 0) {
+                session.totalTimeRaw = laps[laps.length-1].totalTime;
+            }
+            sessionHistory.unshift(session);
+            if (sessionHistory.length > 200) sessionHistory.pop();
+            localStorage.setItem('wtc_session_history', JSON.stringify(sessionHistory));
         }
 
-        // --- 模組 2: 系統控制 (螢幕喚醒、全螢幕、導覽) ---
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
+        function clearAllHistory() {
+            if (confirm("⚠️ 確定要刪除所有歷史紀錄嗎？此動作無法還原。")) {
+                sessionHistory = [];
+                localStorage.removeItem('wtc_session_history');
+                const listContainer = document.getElementById('historyList');
+                if (listContainer) {
+                    listContainer.innerHTML = '';
                 }
-            } catch (err) { console.log('WakeLock:', err.message); }
+                showToast("歷史紀錄已清空");
+                console.log("History cleared.");
+            }
+        }
+        document.getElementById('clearAllBtn')?.addEventListener('click', clearAllHistory);
+
+        function renderHistoryList() {
+            historyListEl.innerHTML = "";
+            if (sessionHistory.length === 0) {
+                historyListEl.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>No history recorded</div>";
+                return;
+            }
+            sessionHistory.forEach(session => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                const d = new Date(session.date);
+                const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+                const gearStr = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "";
+                const distStr = session.dist ? `${session.dist}m` : "";
+                let metaArr = [];
+                if(distStr) metaArr.push(distStr);
+                if(gearStr) metaArr.push(gearStr);
+                metaArr.push(`${session.laps.length} Laps`);
+
+                item.innerHTML = `
+                    <div class="hist-info">
+                        <span class="hist-date">${dateStr}</span>
+                        <span class="hist-main">${formatTime(session.totalTimeRaw)}</span>
+                        <span class="hist-meta">${metaArr.join(' | ')}</span>
+                    </div>
+                    <div style="color:#aaa; font-size:1.2rem;">➔</div>
+                `;
+                item.addEventListener('click', () => {
+                    laps = session.laps;
+                    sessionDate = session.date;
+                    gearFrontInput.value = session.gearF || "";
+                    gearRearInput.value = session.gearR || "";
+                    distInput.value = session.dist || "";
+                    screenHistory.style.display = 'none';
+                    showSummaryScreen();
+                });
+                historyListEl.appendChild(item);
+            });
         }
 
-        document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                await requestWakeLock();
+        // --- CSV 匯出邏輯 ---
+        function exportCurrentSessionToCSV() {
+            if (laps.length === 0) return;
+            let csvContent = "\uFEFF"; 
+            const d = new Date(sessionDate);
+            csvContent += `WTC Cycle Timer Report\n`;
+            csvContent += `Date,${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}\n`;
+            csvContent += `Start Time,${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}\n`;
+            const gear = getGearString();
+            if(gear) csvContent += `Gear,${gear}\n`;
+            const dist = distInput.value;
+            if(dist) csvContent += `Distance,${dist}m\n`;
+            const total = getTotalTimeDisplay();
+            csvContent += `Total Time,${total}\n\n`;
+            csvContent += "Lap,Total Time,Split Time,Diff\n";
+            laps.forEach(lap => {
+                const total = formatTime(lap.totalTime);
+                const split = (lap.splitTime / 1000).toFixed(3);
+                const diff = (lap.diff/1000).toFixed(2);
+                csvContent += `${lap.lapNum},${total},${split},${diff}\n`;
+            });
+            downloadCSV(csvContent, `cycle_timer_${Date.now()}.csv`);
+        }
+
+        function exportAllHistoryToCSV() {
+            if (sessionHistory.length === 0) {
+                alert("No history to download.");
+                return;
+            }
+            let csvContent = "\uFEFF";
+            sessionHistory.forEach((session, index) => {
+                const d = new Date(session.date);
+                const dateStr = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+                const timeStr = `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+                const gear = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "N/A";
+                const dist = session.dist ? session.dist + "m" : "N/A";
+                const totalSessionTime = formatTime(session.totalTimeRaw);
+                csvContent += `SESSION ${index + 1}\n`;
+                csvContent += `Date,${dateStr}\n`;
+                csvContent += `Time,${timeStr}\n`;
+                csvContent += `Gear,${gear}\n`;
+                csvContent += `Dist,${dist}\n`;
+                csvContent += `Total,${totalSessionTime}\n`;
+                csvContent += `Lap,Split,Total,Diff\n`;
+                session.laps.forEach(lap => {
+                    const split = (lap.splitTime / 1000).toFixed(3);
+                    const total = formatTime(lap.totalTime);
+                    const diff = (lap.diff/1000).toFixed(2);
+                    csvContent += `${lap.lapNum},${split},${total},${diff}\n`;
+                });
+                csvContent += `\n\n`;
+            });
+            downloadCSV(csvContent, `WTC_Full_History_${Date.now()}.csv`);
+        }
+
+        function downloadCSV(content, filename) {
+            const encodedUri = encodeURI("data:text/csv;charset=utf-8," + content);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- 核心輔助格式化函數 ---
+        function formatTime(ms) {
+            if (ms < 0 || isNaN(ms)) return "00:00.00";
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const hundredths = Math.floor((ms % 1000) / 10);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
+        }
+
+        function formatCoachStyle(ms) {
+            if(ms < 0) return "--.-";
+            const sec = ms / 1000;
+            return sec.toFixed(1);
+        }
+
+        function formatCoachStyleSummary(ms) {
+            const totalSeconds = ms / 1000;
+            const seconds = Math.floor(totalSeconds % 60);
+            const tenths = Math.floor((ms % 1000) / 10) % 10;
+            return `${seconds}.${tenths}`;
+        }
+
+        function showAlert(message, color) {
+            alertText.textContent = message;
+            alertText.style.color = color || '#fff';
+            alertText.style.borderColor = color || '#fff';
+            alertOverlay.style.display = 'block';
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => { alertOverlay.style.display = 'none'; }, 2500);
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        function updateTimerUI() {
+            if (!isRunning) return;
+            const now = Date.now();
+            totalTimerEl.textContent = formatTime(now - startTime);
+            runningLapTimerEl.textContent = formatTime(now - lastLapTime);
+            requestAnimationFrame(updateTimerUI);
+        }
+
+        function updateLapsRemaining() {
+            const total = parseInt(totalLapsInput.value) || 0;
+            if (total > 0) {
+                const remaining = total - lapCount;
+                if (remaining >= 0) {
+                    lapsRemainingEl.textContent = `(${remaining})`;
+                    lapsRemainingEl.style.display = 'block';
+                } else {
+                    lapsRemainingEl.style.display = 'none';
+                }
+            } else {
+                lapsRemainingEl.style.display = 'none';
+            }
+        }
+
+        // --- 500Hz / 1000Hz 場地單車起步音效 ---
+        function playTrackBeep(isFinal) {
+            try {
+                if (!window.sharedAudioCtx) {
+                    window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const audioCtx = window.sharedAudioCtx;
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                const freq = isFinal ? 990 : 490;
+                const duration = isFinal ? 0.8 : 0.4;
+                oscillator.type = 'square';
+                
+                // 0.05 秒緩衝 (Buffer) 確保音效流暢不延遲
+                const audioStartTime = audioCtx.currentTime + 0.05;
+                oscillator.frequency.setValueAtTime(freq, audioStartTime);
+                gainNode.gain.setValueAtTime(0, audioStartTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, audioStartTime + 0.01);
+                gainNode.gain.setValueAtTime(0.5, audioStartTime + duration - 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, audioStartTime + duration);
+                
+                oscillator.start(audioStartTime);
+                oscillator.stop(audioStartTime + duration);
+            } catch(err) {
+                console.error("Internal Synthesizer Audio Error:", err);
+            }
+        }
+
+        function updateAudioBtnState() {
+            if (optAudioToggle.checked) {
+                audioBtn.classList.add('active');
+                audioBtn.classList.remove('loading');
+                audioBtn.innerHTML = "🔊";
+            } else {
+                audioBtn.classList.remove('active', 'loading');
+                audioBtn.innerHTML = "🔇";
+            }
+        }
+
+        // --- 核心計時流程控制 ---
+        function triggerStart() {
+            // 安全邊緣防錯判定
+            if (window.event && window.event.type === 'touchstart') {
+                const x = window.event.touches[0].clientX;
+                const y = window.event.touches[0].clientY;
+                if (x !== undefined && y !== undefined) {
+                    const screenW = window.innerWidth;
+                    const screenH = window.innerHeight;
+                    const edgeMargin = 60; // 邊緣無效觸發區
+                    if (x < edgeMargin || x > screenW - edgeMargin || y < edgeMargin || y > screenH - edgeMargin) {
+                        console.log("偵測到邊緣點擊 (可能係系統手勢)，忽略！");
+                        return;
+                    }
+                }
+            }
+
+            if (window.isCountingDown || isRunning) return;
+
+            // 喚醒共用音效引擎
+            try {
+                if (!window.sharedAudioCtx) {
+                    window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (window.sharedAudioCtx.state === 'suspended') {
+                    window.sharedAudioCtx.resume();
+                }
+            } catch (err) { console.log("Audio Resume Error:", err); }
+
+            if (optAudioToggle.checked) {
+                window.isCountingDown = true;
+                waitingTextEl.innerHTML = "";
+                document.querySelector('.header-left').style.opacity = '0';
+                document.querySelector('.header-left').style.pointerEvents = 'none';
+                
+                // 防干擾鎖定
+                tapArea.style.pointerEvents = 'none';
+                mainBtn.style.pointerEvents = 'none';
+                topResetBtn.style.display = 'flex';
+                
+                const totalSeconds = 5;
+                for (let i = totalSeconds; i >= 0; i--) {
+                    // 緩衝預備時間
+                    const delay = (totalSeconds - i) * 1000 + 100;
+                    let t = setTimeout(() => {
+                        if (!window.isCountingDown) return;
+                        if (i > 0) {
+                            playTrackBeep(false);
+                            setTimeout(() => {
+                                waitingTextEl.innerHTML = `<span class="countdown-number">${i}</span>`;
+                            }, 50);
+                        } else {
+                            playTrackBeep(true);
+                            setTimeout(() => {
+                                waitingTextEl.innerHTML = "";
+                                tapArea.style.pointerEvents = 'auto';
+                                mainBtn.style.pointerEvents = 'auto';
+                                startTimer();
+                            }, 50);
+                        }
+                    }, delay);
+                    countdownTimeouts.push(t);
+                }
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            window.isCountingDown = false;
+            isRunning = true;
+            sessionDate = Date.now();
+            startTime = Date.now();
+            lastLapTime = startTime;
+            lapCount = 0;
+            laps = [];
+
+            waitingTextEl.style.display = 'none';
+            activeDisplayEl.style.display = 'block';
+            lapInfoRow.style.display = 'flex';
+            topResetBtn.style.display = 'flex';
+
+            document.querySelector('.header-left').style.opacity = '0';
+            document.querySelector('.header-left').style.pointerEvents = 'none';
+
+            mainBtn.textContent = "FINISH";
+            mainBtn.className = "action-btn btn-finish";
+
+            coachDisplayEl.textContent = "--.-";
+            fullDisplayEl.textContent = "--.---";
+            diffDisplayEl.textContent = "GO!";
+            lapCounterEl.textContent = "0";
+
+            updateLapsRemaining();
+            requestAnimationFrame(updateTimerUI);
+        }
+
+        function lap() {
+            if (!isRunning) return;
+            const now = Date.now();
+            const totalDuration = now - startTime;
+            const lapDuration = now - lastLapTime;
+            lastLapTime = now;
+            lapCount++;
+            
+            let diff = 0;
+            let colorClass = "bg-stable";
+
+            if (laps.length > 0) {
+                const prevLap = laps[laps.length - 1].splitTime;
+                diff = lapDuration - prevLap;
+                const diffSec = diff / 1000;
+                if (Math.abs(diffSec) <= 0.3) {
+                    colorClass = "bg-stable";
+                } else if (diff < 0) {
+                    colorClass = "bg-faster";
+                } else {
+                    colorClass = "bg-slower";
+                }
+            }
+            
+            laps.push({
+                lapNum: lapCount,
+                splitTime: lapDuration,
+                totalTime: totalDuration,
+                diff: diff,
+                status: colorClass
+            });
+            
+            lapCounterEl.textContent = lapCount;
+            updateLapsRemaining();
+            coachDisplayEl.textContent = formatCoachStyle(lapDuration);
+            fullDisplayEl.textContent = (lapDuration / 1000).toFixed(3);
+            
+            if (lapCount > 1) {
+                const diffSec = (diff / 1000).toFixed(2);
+                const sign = diff > 0 ? "+" : "";
+                diffDisplayEl.textContent = `${sign}${diffSec}s`;
+            } else {
+                diffDisplayEl.textContent = "Start";
+            }
+            
+            tapArea.className = `tap-area ${colorClass}`;
+            
+            const totalLaps = parseInt(totalLapsInput.value);
+            if (!isNaN(totalLaps) && totalLaps > 0) {
+                const remaining = totalLaps - lapCount;
+                if (remaining === 10) showAlert("10 LAPS LEFT", "#ffd600");
+                else if (remaining === 5) showAlert("5 LAPS LEFT", "#ff6d00");
+                else if (remaining === 1) showAlert("LAST LAP", "#ff1744");
+                else if (remaining === 0) {
+                    showAlert("FINISHED", "#ff1744");
+                    finishSession();
+                }
+            }
+        }
+
+        function finishSession() {
+            if (!isRunning) return;
+            isRunning = false;
+            saveCurrentSession();
+            showSummaryScreen();
+        }
+
+        function getGearString() {
+            const front = gearFrontInput.value;
+            const rear = gearRearInput.value;
+            if (front && rear) { return `${front}x${rear}`; }
+            return "";
+        }
+
+        function getTotalTimeDisplay() {
+            if (reportOptions.totalFromLastLap && laps.length > 0) {
+                return formatTime(laps[laps.length-1].totalTime);
+            }
+            const finalTime = laps.length > 0 ? laps[laps.length-1].totalTime : 0;
+            return formatTime(finalTime);
+        }
+
+        function showSummaryScreen() {
+            screenTimer.style.display = 'none';
+            screenSummary.style.display = 'flex';
+            renderSummaryData();
+        }
+
+        function renderSummaryData() {
+            finalTotalTimeEl.textContent = getTotalTimeDisplay();
+            const gear = getGearString();
+            const dist = distInput.value;
+            let subMeta = [];
+            if(dist) subMeta.push(`DIST: ${dist}m`);
+            if(gear) subMeta.push(`GEAR: ${gear}`);
+            summaryGearInfo.textContent = subMeta.join(' | ');
+
+            summaryBody.innerHTML = "";
+            laps.forEach(lap => {
+                const tr = document.createElement('tr');
+                let rowClass = "row-stable";
+                if (lap.lapNum > 1) {
+                    if (lap.status === 'bg-faster') rowClass = "row-faster";
+                    if (lap.status === 'bg-slower') rowClass = "row-slower";
+                }
+                const diffSec = (lap.diff / 1000).toFixed(2);
+                const sign = lap.diff > 0 ? "+" : "";
+                const diffDisplay = lap.lapNum === 1 ? "-" : `${sign}${diffSec}s`;
+
+                tr.innerHTML = `
+                    <td class="row-lap-num">${lap.lapNum}</td>
+                    <td class="${rowClass}">${(lap.splitTime / 1000).toFixed(3)}</td>
+                    <td style="color:#fff;">${formatTime(lap.totalTime)}</td>
+                    <td class="${rowClass}">${diffDisplay}</td>
+                `;
+                summaryBody.appendChild(tr);
+            });
+        }
+
+        function resetTimerState() {
+            isRunning = false;
+            window.isCountingDown = false;
+            tapArea.style.pointerEvents = 'auto';
+            mainBtn.style.pointerEvents = 'auto';
+            
+            if (audioStartTimeout) clearTimeout(audioStartTimeout);
+            countdownTimeouts.forEach(t => clearTimeout(t));
+            countdownTimeouts = [];
+            
+            countdownAudio.pause();
+            countdownAudio.currentTime = 0;
+            
+            screenSummary.style.display = 'none';
+            screenTimer.style.display = 'flex';
+            
+            mainBtn.textContent = "START";
+            mainBtn.className = "action-btn btn-start";
+            
+            document.querySelector('.header-left').style.opacity = '1';
+            document.querySelector('.header-left').style.pointerEvents = 'auto';
+            
+            updateAudioBtnState();
+            topResetBtn.style.display = 'none';
+            tapArea.className = "tap-area";
+            activeDisplayEl.style.display = 'none';
+            waitingTextEl.style.display = 'block';
+            waitingTextEl.innerHTML = "TAP ANYWHERE<br>TO START";
+            
+            totalTimerEl.textContent = "00:00.00";
+            runningLapTimerEl.textContent = "00:00.00";
+            lapCounterEl.textContent = "0";
+            lapInfoRow.style.display = 'none';
+            lapsRemainingEl.style.display = 'none';
+        }
+
+        function getFormattedDate(d) {
+            const date = d ? new Date(d) : new Date();
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year}`;
+        }
+
+        function getFormattedTime(d) {
+            const date = d ? new Date(d) : new Date();
+            return date.toLocaleTimeString([], { hour12: false });
+        }
+
+        function generateShareText() {
+            const dateStr = getFormattedDate(sessionDate);
+            const timeStr = getFormattedTime(sessionDate);
+            let text = "";
+            
+            if (reportOptions.whatsAppFormat) {
+                if(reportOptions.dist || reportOptions.gear) {
+                    const gear = getGearString();
+                    text += `🚴 *WTC Cycle Stats*\n`;
+                    if(reportOptions.dist && distInput.value) text += `📏 ${distInput.value}m `;
+                    if(reportOptions.gear && gear) text += `⚙️ ${gear}`;
+                    text += `\n\n`;
+                }
+                if(reportOptions.date) text += `📅 ${dateStr} ${timeStr}\n`;
+                if(reportOptions.total) text += `⏱️ *Total: ${getTotalTimeDisplay()}*\n`;
+                if(reportOptions.laps) text += `🔄 Laps: ${laps.length}\n`;
+                
+                if (reportOptions.table && laps.length > 0) {
+                    text += `\n`;
+                    laps.forEach(l => {
+                        const split = (l.splitTime / 1000).toFixed(3);
+                        text += `• Lap ${String(l.lapNum).padStart(2, '0')}: *${split}s*\n`;
+                    });
+                }
+            } else {
+                if(reportOptions.dist || reportOptions.gear) {
+                    const gear = getGearString();
+                    text += `WTC Cycle Stats\n`;
+                    if(reportOptions.dist && distInput.value) text += `Distance: ${distInput.value}m `;
+                    if(reportOptions.gear && gear) text += `Gear: ${gear}`;
+                    text += `\n\n`;
+                }
+                if(reportOptions.date) text += `Date: ${dateStr} ${timeStr}\n`;
+                if(reportOptions.total) text += `Total Time: ${getTotalTimeDisplay()}\n`;
+                if(reportOptions.laps) text += `Laps: ${laps.length}\n`;
+                
+                if (reportOptions.table && laps.length > 0) {
+                    text += `\nLap,Split,Total,Diff\n`;
+                    laps.forEach(l => {
+                        const split = (l.splitTime / 1000).toFixed(3);
+                        const tot = formatTime(l.totalTime);
+                        const diffSec = (l.diff / 1000).toFixed(2);
+                        const sign = l.diff > 0 ? "+" : "";
+                        const dStr = l.lapNum === 1 ? "-" : `${sign}${diffSec}s`;
+                        text += `${l.lapNum},${split},${tot},${dStr}\n`;
+                    });
+                }
+            }
+            return text.trim();
+        }
+
+        // --- 全螢幕與 UI 互動事件 ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Fullscreen Error: ${err.message}`);
+                        showFallbackAlert();
+                    });
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else {
+                    showFallbackAlert();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function showFallbackAlert() {
+            alert("iPhone 或部分設備不支援直接全螢幕 🥲\n\n想完美全螢幕？請撳瀏覽器嘅「分享」掣，然後揀「加入主畫面 (Add to Home Screen)」。\n\n之後喺桌面打開個 App，就會係 100% 完美全螢幕㗎喇！");
+        }
+
+        // --- 點擊與按鈕事件綁定 ---
+        audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            optAudioToggle.checked = !optAudioToggle.checked;
+            saveSettings();
+        });
+
+        fullscreenBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFullscreen();
+        });
+
+        historyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            renderHistoryList();
+            screenHistory.style.display = 'flex';
+        });
+
+        closeHistoryBtn.addEventListener('click', () => {
+            screenHistory.style.display = 'none';
+        });
+
+        dlAllCsvBtn.addEventListener('click', exportAllHistoryToCSV);
+        csvBtn.addEventListener('click', exportCurrentSessionToCSV);
+
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            reportMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!reportMenu.contains(e.target) && e.target !== settingsBtn) {
+                reportMenu.classList.remove('show');
             }
         });
 
-        function toggleFullScreen(e) {
-            e.preventDefault(); e.stopPropagation();
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert("⚠️ 您目前的手機瀏覽器不支援全螢幕 API。建議使用「加入主畫面」功能將其變成獨立 App！");
+        shareBtn.addEventListener('click', () => {
+            const shareText = generateShareText();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showToast("已複製報告至剪貼簿！");
+                }).catch(err => {
+                    alert("無法複製，請手動選取複製");
                 });
             } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+                alert("設備不支援自動複製，內容：\n\n" + shareText);
             }
-        }
+        });
 
-        function goBack(e) {
-            if(e) { e.preventDefault(); e.stopPropagation(); }
-            if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
-            document.getElementById('tapArea').removeEventListener('pointerdown', handleFinishTap);
+        nextSessionBtn.addEventListener('click', resetTimerState);
+        topResetBtn.addEventListener('click', resetTimerState);
 
-            currentMode = ''; configLocked = false; finishModeActive = false; lastBeepSec = -1;
+        mainBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isRunning) triggerStart();
+            else finishSession();
+        });
 
-            document.getElementById('riderInfo').classList.add('hidden');
-            document.getElementById('finishRecords').classList.add('hidden');
-            document.getElementById('subDisplay').classList.remove('hidden'); 
-            document.getElementById('mainDisplay').style.color = 'var(--text-color)'; 
-            document.getElementById('mainDisplay').classList.remove('finish-mode');
-            document.getElementById('subDisplay').classList.remove('finish-mode');
+        function handleTap(e) {
+            if (e.target && (
+                e.target.closest('.floating-action-container') ||
+                e.target.closest('.header') ||
+                e.target.closest('.summary-header-bar') ||
+                e.target.closest('.report-options-menu') ||
+                e.target.closest('.screen-history') ||
+                e.target.tagName === 'INPUT' ||
+                e.target.id === 'topResetBtn'
+            )) return;
 
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('setupScreen').style.display = 'flex';
-            
-            saveLocalData(); 
-        }
-
-        // --- 模組 3: 核心計時與名單邏輯 ---
-        function startApp(mode) {
-            const timeStr = document.getElementById('globalFirstTime').value;
-            const intSec = parseInt(document.getElementById('globalInterval').value);
-            const bibsStr = document.getElementById('globalBibs').value;
-
-            if (!timeStr || isNaN(intSec) || intSec <= 0) { alert("請填妥起步時間和間距！"); return; }
-
-            let now = getNow(); // 【修改】使用校準後的時間
-            let [h, m, s] = timeStr.split(':').map(Number);
-            if(isNaN(s)) s = 0; 
-            
-            let baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s);
-            if (baseTime.getTime() < now.getTime() && (now.getTime() - baseTime.getTime()) > 86400000 / 2) {
-                baseTime.setDate(baseTime.getDate() + 1);
-            }
-
-            intervalMs = intSec * 1000;
-            const bibs = bibsStr.split(/[\s,]+/).filter(b => b.trim() !== '');
-            globalBibOrder = bibs; 
-            
-            if (!startProfiles) startProfiles = {};
-            let currentTime = getNow().getTime(); // 【修改】使用校準後的時間
-            let bibCounters = {}; 
-
-            // 重新分配發車時間
-            bibs.forEach((bib, index) => {
-                let st = new Date(baseTime.getTime() + index * intervalMs);
-                let stTime = st.getTime();
-                
-                if (!startProfiles[bib]) startProfiles[bib] = [];
-                if (!Array.isArray(startProfiles[bib])) startProfiles[bib] = [startProfiles[bib]];
-
-                if (!bibCounters[bib]) bibCounters[bib] = 0;
-                let runIdx = bibCounters[bib];
-
-                if (startProfiles[bib].length <= runIdx) {
-                    startProfiles[bib].push(stTime);
-                } 
-                else if (startProfiles[bib][runIdx] > currentTime) {
-                    startProfiles[bib][runIdx] = stTime;
-                }
-                
-                bibCounters[bib]++;
-            });
-
-            saveLocalData(); 
-            initApp(mode, baseTime);
-        }
-
-        function initApp(mode, baseTime) {
-            currentMode = mode;
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            playBeep(20000, 'sine', 10, 0); 
-            requestWakeLock();
-
-            document.getElementById('setupScreen').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            
-            if (mode === 'start') {
-                document.getElementById('riderInfo').classList.remove('hidden');
-                document.getElementById('subDisplay').classList.add('hidden'); 
-                document.getElementById('mainDisplay').innerText = "READY";
-                
-                nextTargetTime = new Date(baseTime.getTime());
-                currentStartIdx = 0; configLocked = true; lastBeepSec = -1;
-
-                let now = getNow(); // 【修改】使用校準後的時間
-                while (nextTargetTime.getTime() <= now.getTime()) {
-                    nextTargetTime.setTime(nextTargetTime.getTime() + intervalMs);
-                    currentStartIdx++;
-                }
+            if (!isRunning) {
+                if(e.type === 'touchstart') e.preventDefault();
+                triggerStart();
             } else {
-                document.getElementById('finishRecords').classList.remove('hidden');
-                document.getElementById('mainDisplay').classList.add('finish-mode');
-                document.getElementById('subDisplay').classList.add('finish-mode');
-                
-                renderRecordsList();
-                document.getElementById('tapArea').addEventListener('pointerdown', handleFinishTap);
-                finishModeActive = true;
+                if(e.type === 'touchstart') e.preventDefault();
+                lap();
             }
-            requestAnimationFrame(systemLoop);
         }
 
-        function renderRecordsList() {
-            const list = document.getElementById('recordsList');
-            list.innerHTML = ''; 
-            [...finishData].reverse().forEach(row => {
-                const item = document.createElement('div');
-                item.className = 'record-item';
-                let netColor = row.netTimeStr === 'ERROR' ? 'var(--status-red)' : (row.netTimeStr && row.netTimeStr !== 'NO_START_TIME' ? 'var(--btn-start-green)' : 'var(--text-grey)');
-                item.innerHTML = `
-                    <div class="col-seq">#${row.seq}</div>
-                    <div class="col-tod">${row.time}</div>
-                    <input type="number" class="col-bib" placeholder="號碼" value="${row.bib || ''}" oninput="updateRecord(${row.seq}, this.value)">
-                    <div class="col-net" id="net-${row.seq}" style="color: ${netColor}">${row.netTimeStr || '--:--:--.---'}</div>
-                `;
-                list.appendChild(item);
-            });
-        }
+        tapArea.addEventListener('touchstart', handleTap, {passive: false});
+        tapArea.addEventListener('mousedown', handleTap);
 
-        // --- 模組 4: 音效系統 ---
-        function playBeep(freq, type, durationMs, vol = 1) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            const startTime = audioCtx.currentTime + 0.05;
-            const durationSec = durationMs / 1000;
-
-            osc.type = type; osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(vol * 0.5, startTime + 0.01);
-            gain.gain.setValueAtTime(vol * 0.5, startTime + durationSec - 0.01);
-            gain.gain.linearRampToValueAtTime(0, startTime + durationSec);
-
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(startTime); osc.stop(startTime + durationSec);
-        }
-
-        // --- 模組 5: UI 更新迴圈 ---
-        function systemLoop() {
-            const now = getNow(); // 【修改】使用校準後的時間
-            document.getElementById('systemClock').innerText = now.toLocaleTimeString('en-GB');
-            if (currentMode === 'start' && configLocked && nextTargetTime) updateStartMode(now);
-            else if (currentMode === 'finish') updateFinishMode(now);
-            animationFrameId = requestAnimationFrame(systemLoop);
-        }
-
-        function getNextRiderDisplay(idx) {
-            if (globalBibOrder.length > 0) {
-                return idx < globalBibOrder.length ? `#${globalBibOrder[idx]}` : `#(附加 ${idx + 1})`;
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.key === ' ') {
+                event.preventDefault();
+                const fakeEvent = { target: document.body, type: 'keydown', preventDefault: function() {} };
+                handleTap(fakeEvent);
+                console.log("已成功透過空白鍵觸發 handleTap！");
             }
-            return `#${idx + 1}`;
-        }
+        });
 
-        function updateStartMode(now) {
-            let diffMs = nextTargetTime.getTime() - now.getTime();
-
-            if (diffMs <= 0) {
-                playBeep(990, 'square', 800); 
-                lastBeepSec = -1; currentStartIdx++;
-                nextTargetTime.setTime(nextTargetTime.getTime() + intervalMs);
-                diffMs = nextTargetTime.getTime() - now.getTime();
-                document.getElementById('tapArea').style.backgroundColor = 'var(--status-green)';
-                setTimeout(() => { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 500);
-            }
-
-            let secLeft = Math.ceil(diffMs / 1000);
-            document.getElementById('mainDisplay').innerText = secLeft;
-
-    let listHTML = "";
-
-            let showNum = 5; 
-
-            for (let i = 0; i < showNum; i++) {
-
-                let idx = currentStartIdx + i;
-
-                if (idx < globalBibOrder.length || globalBibOrder.length === 0) {
-
-                    let riderTime = new Date(nextTargetTime.getTime() + (i * intervalMs));
-
-                    let timeStr = riderTime.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-
-                    let riderName = getNextRiderDisplay(idx);
-
-                    
-
-                    if (i === 0) {
-
-                        listHTML += `<div style="color: #00ff00; font-weight: bold; font-size: 1.8em; margin-bottom: 5px;">NEXT: ${timeStr} - ${riderName}</div>`;
-
-                    } else {
-
-                        listHTML += `<div style="color: #bbb; font-size: 1.2em;">${timeStr} - ${riderName}</div>`;
-
+        // --- 🟢 Fix: Background / Foreground Auto-Wake System ---
+        // 當使用者切換去影相/離開頁面再返回時，手動重啟音頻上下文，確保聲音唔會失蹤。
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                console.log("App returned to foreground. Recovering web audio pipeline...");
+                try {
+                    if (window.sharedAudioCtx && window.sharedAudioCtx.state === 'suspended') {
+                        window.sharedAudioCtx.resume().then(() => {
+                            console.log("Audio Context state synchronized successfully.");
+                        }).catch(err => {
+                            console.warn("Failed to wake audio engine on resume:", err);
+                        });
                     }
-
+                } catch (e) {
+                    console.error("Critical Audio Pipeline Error:", e);
                 }
-
             }
+        });
 
-            document.getElementById('riderInfo').innerHTML = listHTML || "名單已結束";
-
-            if (secLeft !== lastBeepSec) {
-                if (secLeft === 30 || secLeft === 10 || (secLeft <= 5 && secLeft > 0)) playBeep(490, 'square', 400); 
-                lastBeepSec = secLeft;
-            }
-            // 🎨 控制最後 10 秒字體轉黃色 (#FFD700 係一種好搶眼嘅金黃色)
-document.getElementById('mainDisplay').style.color = secLeft <= 10 ? '#FFD700' : 'var(--text-color)';
+        // --- 🟢 Service Worker 註冊 ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(function() {
+                console.log('Service Worker Registered Successfully.');
+            }).catch(function(err) {
+                console.log('Service Worker Registration Failed:', err);
+            });
         }
-
-        function updateFinishMode(now) {
-            let h = String(now.getHours()).padStart(2, '0'); let m = String(now.getMinutes()).padStart(2, '0');
-            let s = String(now.getSeconds()).padStart(2, '0'); let ms = String(now.getMilliseconds()).padStart(3, '0');
-            document.getElementById('mainDisplay').innerText = `${h}:${m}:${s}`; document.getElementById('subDisplay').innerText = `.${ms}`;
-        }
-
-        // --- 模組 6: 衝線與匯出邏輯 ---
-        function handleFinishTap(e) {
-            if(!finishModeActive) return;
-            e.preventDefault(); 
-            
-            const tapTime = getNow(); // 【修改】使用校準後的時間記錄衝線
-            let h = String(tapTime.getHours()).padStart(2, '0'); let m = String(tapTime.getMinutes()).padStart(2, '0');
-            let s = String(tapTime.getSeconds()).padStart(2, '0'); let ms = String(tapTime.getMilliseconds()).padStart(3, '0');
-            let timeString = `${h}:${m}:${s}.${ms}`;
-
-            finishData.push({ seq: seqNum, time: timeString, todMs: tapTime.getTime(), bib: '', netTimeStr: '' });
-            saveLocalData();
-
-            const list = document.getElementById('recordsList');
-            const item = document.createElement('div');
-            item.className = 'record-item';
-            item.innerHTML = `
-                <div class="col-seq">#${seqNum}</div>
-                <div class="col-tod">${timeString}</div>
-                <input type="number" class="col-bib" placeholder="車牌" oninput="updateRecord(${seqNum}, this.value)">
-                <div class="col-net" id="net-${seqNum}">--:--:--.---</div>
-            `;
-            list.prepend(item); 
-            seqNum++;
-            playBeep(1200, 'square', 100);
-            document.getElementById('tapArea').style.backgroundColor = '#333';
-            setTimeout(() => { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 100);
-        }
-
-        function updateRecord(seq, bibValue) {
-            const record = finishData.find(r => r.seq === seq);
-            if (!record) return;
-            const bib = bibValue.trim();
-            record.bib = bib;
-            const netSpan = document.getElementById(`net-${seq}`);
-
-            if (bib === "") {
-                netSpan.innerText = "--:--:--.---"; netSpan.style.color = "var(--text-grey)"; record.netTimeStr = ""; 
-            } else if (startProfiles[bib]) {
-                let validStarts = [];
-                if (Array.isArray(startProfiles[bib])) {
-                    validStarts = startProfiles[bib].filter(t => t <= record.todMs);
-                } else {
-                    if (startProfiles[bib] <= record.todMs) validStarts.push(startProfiles[bib]);
-                }
-
-                if (validStarts.length > 0) {
-                    let bestStart = validStarts[validStarts.length - 1];
-                    const netMs = record.todMs - bestStart;
-                    
-                    const formatted = formatNetTime(netMs);
-                    netSpan.innerText = formatted; netSpan.style.color = "var(--btn-start-green)"; record.netTimeStr = formatted;
-                } else {
-                    netSpan.innerText = "尚未發車"; netSpan.style.color = "var(--status-red)"; record.netTimeStr = "ERROR";
-                }
-            } else {
-                netSpan.innerText = "無起步記錄"; netSpan.style.color = "var(--text-grey)"; record.netTimeStr = "NO_START_TIME";
-            }
-            saveLocalData();
-        }
-
-        function formatNetTime(ms) {
-            let totalSec = Math.floor(ms / 1000); let remMs = ms % 1000;
-            let h = Math.floor(totalSec / 3600); let m = Math.floor((totalSec % 3600) / 60); let s = totalSec % 60;
-            let hStr = h > 0 ? String(h).padStart(2, '0') + ':' : '';
-            return `${hStr}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(remMs).padStart(3, '0')}`;
-        }
-
-        function exportCSV() {
-            if (finishData.length === 0) { alert('無記錄可匯出'); return; }
-            let csvContent = "\uFEFF順序,衝線真實時間(TOD),運動員號碼,淨時間(Net Time)\n";
-            finishData.forEach(row => { csvContent += `${row.seq},${row.time},${row.bib || ''},${row.netTimeStr || ''}\n`; });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url); link.setAttribute("download", `itt_result_${getNow().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
-        }
-</script>
+    </script>
 </body>
 </html>
