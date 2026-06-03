@@ -20,7 +20,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-gray-950 text-white font-sans p-3 sm:p-4 md:p-6 min-h-screen h-screen flex flex-col overflow-x-hidden antialiased select-none">
+<body class="bg-gray-950 text-white font-sans p-3 sm:p-4 md:p-6 min-h-screen flex flex-col overflow-x-hidden antialiased select-none">
 
     <header class="mb-5 sm:mb-6 border-b border-gray-800 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
         <div>
@@ -44,7 +44,7 @@
         </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-grow overflow-y-auto md:overflow-hidden pr-1 pb-4 md:pb-0 no-scrollbar">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 flex-grow pb-4 pr-1 no-scrollbar">
         
         <div class="md:flex md:flex-col gap-4 sm:gap-6 justify-start shrink-0">
             <div class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-2xl flex flex-col justify-start w-full">
@@ -69,23 +69,23 @@
             </div>
         </div>
 
-        <div class="md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:overflow-hidden">
-            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col md:h-full overflow-hidden">
+        <div class="md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col overflow-hidden">
                 <h2 class="text-xs sm:text-sm font-bold mb-3 sm:mb-4 text-cyan-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2 shrink-0">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
                     <span id="youth-title-date">中長青訓 項目</span>
                 </h2>
-                <div id="youth-schedule-list" class="space-y-4 overflow-y-auto flex-grow max-h-[400px] md:max-h-none pr-1 no-scrollbar">
+                <div id="youth-schedule-list" class="space-y-4 pr-1 no-scrollbar">
                     <p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>
                 </div>
             </div>
 
-            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col md:h-full overflow-hidden">
+            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col overflow-hidden">
                 <h2 class="text-xs sm:text-sm font-bold mb-3 sm:mb-4 text-amber-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2 shrink-0">
                     <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                     <span id="stars-title-date">明日之星 項目</span>
                 </h2>
-                <div id="stars-schedule-list" class="space-y-4 overflow-y-auto flex-grow max-h-[400px] md:max-h-none pr-1 no-scrollbar">
+                <div id="stars-schedule-list" class="space-y-4 pr-1 no-scrollbar">
                     <p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>
                 </div>
             </div>
@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <div id="coach-search-results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto max-h-[260px] pr-1 text-xs no-scrollbar">
+            <div id="coach-search-results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pr-1 text-xs no-scrollbar">
                 <p class="text-gray-500 italic text-center py-4 col-span-full">請依序選取月份與教練...</p>
             </div>
         </div>
