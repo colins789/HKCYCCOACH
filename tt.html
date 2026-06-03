@@ -1,221 +1,221 @@
 
-!DOCTYPE html
-html lang=zh-HK
-head
-    meta charset=UTF-8
-    meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    meta name=apple-mobile-web-app-capable content=yes
-    meta name=apple-mobile-web-app-status-bar-style content=black-translucent
-    meta name=apple-mobile-web-app-title content=WTC TT
-    meta name=mobile-web-app-capable content=yes
-    meta name=theme-color content=#000000
-    link rel=apple-touch-icon href=dataimagesvg+xml,svg xmlns=%22httpwww.w3.org2000svg%22 viewBox=%220 0 100 100%22rect width=%22100%22 height=%22100%22 fill=%22%23000%22text y=%2250%22 x=%2250%22 font-size=%2260%22 text-anchor=%22middle%22 dominant-baseline=%22central%22⏱️textsvg
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WTC TT">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text y=%2250%22 x=%2250%22 font-size=%2260%22 text-anchor=%22middle%22 dominant-baseline=%22central%22>⏱️</text></svg>">
     
-    titleWTC TT Timer v5.0title
+    <title>WTC TT Timer v5.0</title>
 
-    style
-         --- 全域重設及變數 --- 
-        root {
-            --bg-color #000000; --text-color #ffffff;
-            --status-green #1b5e20; --status-red #b71c1c;
-            --status-grey #2a2a2a; --text-grey #aaaaaa;
-            --btn-start-green #00e676; --btn-finish-red #ff1744;
-            --btn-reset-blue #2979ff; --border-color #333333;
+    <style>
+        /* --- 全域重設及變數 --- */
+        :root {
+            --bg-color: #000000; --text-color: #ffffff;
+            --status-green: #1b5e20; --status-red: #b71c1c;
+            --status-grey: #2a2a2a; --text-grey: #aaaaaa;
+            --btn-start-green: #00e676; --btn-finish-red: #ff1744;
+            --btn-reset-blue: #2979ff; --border-color: #333333;
         }
 
-         {
-            box-sizing border-box; -webkit-tap-highlight-color transparent;
-            user-select none; -webkit-user-select none; touch-action manipulation;
+        * {
+            box-sizing: border-box; -webkit-tap-highlight-color: transparent;
+            user-select: none; -webkit-user-select: none; touch-action: manipulation;
         }
 
         body, html {
-            margin 0; padding 0; width 100%; height 100%;
-            background-color var(--bg-color); color var(--text-color);
-            font-family -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-            overflow hidden; display flex; flex-direction column;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden; display: flex; flex-direction: column;
         }
 
-         --- 模式選擇畫面 (設定頁) --- 
+        /* --- 模式選擇畫面 (設定頁) --- */
         #setupScreen {
-            position absolute; top 0; left 0; width 100%; height 100%;
-            background-color var(--bg-color); z-index 100;
-            display flex; flex-direction column; justify-content flex-start; align-items center;
-            padding env(safe-area-inset-top) 20px 20px 20px; overflow-y auto;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); z-index: 100;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            padding: env(safe-area-inset-top) 20px 20px 20px; overflow-y: auto;
         }
 
         .global-config-panel {
-            background var(--status-grey); border 1px solid var(--border-color);
-            border-radius 15px; padding 15px; width 100%; max-width 450px;
-            display flex; flex-direction column; gap 12px; margin-bottom 15px;
+            background: var(--status-grey); border: 1px solid var(--border-color);
+            border-radius: 15px; padding: 15px; width: 100%; max-width: 450px;
+            display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px;
         }
         
-        .config-row { display flex; justify-content space-between; align-items center; }
+        .config-row { display: flex; justify-content: space-between; align-items: center; }
         .config-input {
-            background black; color white; border 1px solid var(--text-grey);
-            padding 8px; font-size 16px; border-radius 8px; text-align center;
+            background: black; color: white; border: 1px solid var(--text-grey);
+            padding: 8px; font-size: 16px; border-radius: 8px; text-align: center;
         }
         .config-textarea {
-            width 100%; height 70px; background black; color white; border 1px solid var(--text-grey);
-            padding 10px; font-size 16px; border-radius 8px; resize none; user-select text; -webkit-user-select text;
+            width: 100%; height: 70px; background: black; color: white; border: 1px solid var(--text-grey);
+            padding: 10px; font-size: 16px; border-radius: 8px; resize: none; user-select: text; -webkit-user-select: text;
         }
 
-         --- 資料庫狀態區 --- 
+        /* --- 資料庫狀態區 --- */
         .db-status-panel {
-            background rgba(41, 121, 255, 0.15); border 1px solid var(--btn-reset-blue);
-            border-radius 10px; padding 15px; width 100%; max-width 450px;
-            text-align center; margin-bottom 15px;
+            background: rgba(41, 121, 255, 0.15); border: 1px solid var(--btn-reset-blue);
+            border-radius: 10px; padding: 15px; width: 100%; max-width: 450px;
+            text-align: center; margin-bottom: 15px;
         }
-        .db-btn-group { display flex; gap 10px; margin-top 10px; }
-        .btn-db { flex 1; padding 10px; border-radius 8px; font-weight bold; border none; cursor pointer; }
-        .btn-export { background var(--btn-reset-blue); color white; }
-        .btn-clear { background var(--status-red); color white; }
+        .db-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-db { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-export { background: var(--btn-reset-blue); color: white; }
+        .btn-clear { background: var(--status-red); color: white; }
 
         .mode-btn {
-            width 100%; padding 18px; margin 6px 0;
-            font-size 22px; font-weight bold; border-radius 10px;
-            border none; color white; cursor pointer; text-align center;
+            width: 100%; padding: 18px; margin: 6px 0;
+            font-size: 22px; font-weight: bold; border-radius: 10px;
+            border: none; color: white; cursor: pointer; text-align: center;
         }
-        .mode-start { background-color var(--status-green); border 2px solid var(--btn-start-green); }
-        .mode-finish { background-color var(--status-red); border 2px solid var(--btn-finish-red); }
+        .mode-start { background-color: var(--status-green); border: 2px solid var(--btn-start-green); }
+        .mode-finish { background-color: var(--status-red); border: 2px solid var(--btn-finish-red); }
 
-         --- 主畫面 (計時器紀錄) 共用 --- 
-        #mainApp { display none; flex-direction column; height 100%; width 100%; }
+        /* --- 主畫面 (計時器/紀錄) 共用 --- */
+        #mainApp { display: none; flex-direction: column; height: 100%; width: 100%; }
 
         .top-bar {
-            position relative; z-index 10; background-color var(--bg-color);
-            min-height 60px; display flex; justify-content space-between; align-items center;
-            padding 10px 15px; border-bottom 1px solid var(--border-color);
-            font-size 16px; color var(--text-grey);
-            padding-top calc(env(safe-area-inset-top) + 10px);
+            position: relative; z-index: 10; background-color: var(--bg-color);
+            min-height: 60px; display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; border-bottom: 1px solid var(--border-color);
+            font-size: 16px; color: var(--text-grey);
+            padding-top: calc(env(safe-area-inset-top) + 10px);
         }
         
         .action-btn {
-            background var(--status-grey); border 1px solid #555; color var(--text-color);
-            border-radius 8px; padding 8px 12px; font-size 14px; cursor pointer; font-weight bold;
+            background: var(--status-grey); border: 1px solid #555; color: var(--text-color);
+            border-radius: 8px; padding: 8px 12px; font-size: 14px; cursor: pointer; font-weight: bold;
         }
-        .action-btnactive { background #444; }
+        .action-btn:active { background: #444; }
 
         .tap-area {
-            flex-grow 1; display flex; flex-direction column; justify-content center; align-items center;
-            background-color var(--bg-color); transition background-color 0.1s ease;
-            position relative; z-index 1; min-height 150px;
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-color: var(--bg-color); transition: background-color 0.1s ease;
+            position: relative; z-index: 1; min-height: 150px;
         }
-        .tap-areaactive { background-color #1a1a1a; }
+        .tap-area:active { background-color: #1a1a1a; }
         
         .main-display {
-            font-size 28vw; font-weight 800; font-variant-numeric tabular-nums;
-            line-height 1; text-align center; transition font-size 0.3s;
+            font-size: 28vw; font-weight: 800; font-variant-numeric: tabular-nums;
+            line-height: 1; text-align: center; transition: font-size 0.3s;
         }
-        .main-display.finish-mode { font-size 16vw; }
+        .main-display.finish-mode { font-size: 16vw; }
         
         .sub-display {
-            font-size 8vw; color var(--text-grey); margin-top 5px; font-variant-numeric tabular-nums;
+            font-size: 8vw; color: var(--text-grey); margin-top: 5px; font-variant-numeric: tabular-nums;
         }
-        .sub-display.finish-mode { font-size 5vw; }
+        .sub-display.finish-mode { font-size: 5vw; }
 
-        .info-text { font-size 24px; color var(--btn-start-green); margin-bottom 10px; font-weight bold; }
+        .info-text { font-size: 24px; color: var(--btn-start-green); margin-bottom: 10px; font-weight: bold; }
 
         .records-area {
-            height 45%; background var(--status-grey); border-top 1px solid var(--border-color);
-            display flex; flex-direction column; z-index 5;
+            height: 45%; background: var(--status-grey); border-top: 1px solid var(--border-color);
+            display: flex; flex-direction: column; z-index: 5;
         }
         .records-header {
-            display flex; justify-content space-between; padding 10px 15px;
-            border-bottom 1px solid var(--border-color); align-items center;
+            display: flex; justify-content: space-between; padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color); align-items: center;
         }
-        .records-list { flex-grow 1; overflow-y auto; padding 0 10px; }
+        .records-list { flex-grow: 1; overflow-y: auto; padding: 0 10px; }
         .record-item {
-            display flex; align-items center; padding 12px 5px;
-            border-bottom 1px solid #444; gap 8px;
+            display: flex; align-items: center; padding: 12px 5px;
+            border-bottom: 1px solid #444; gap: 8px;
         }
         
-        .col-seq { width 35px; color var(--text-grey); font-size 16px; }
-        .col-tod { width 95px; font-size 16px; font-variant-numeric tabular-nums; }
+        .col-seq { width: 35px; color: var(--text-grey); font-size: 16px; }
+        .col-tod { width: 95px; font-size: 16px; font-variant-numeric: tabular-nums; }
         .col-bib { 
-            width 60px; background #111; color #fff; border 1px solid #555;
-            border-radius 5px; padding 8px 5px; text-align center; font-size 18px; font-weight bold;
-            user-select text; -webkit-user-select text;
+            width: 60px; background: #111; color: #fff; border: 1px solid #555;
+            border-radius: 5px; padding: 8px 5px; text-align: center; font-size: 18px; font-weight: bold;
+            user-select: text; -webkit-user-select: text;
         }
         .col-net { 
-            flex-grow 1; text-align right; font-size 18px; font-weight bold; 
-            font-variant-numeric tabular-nums; color var(--text-grey);
+            flex-grow: 1; text-align: right; font-size: 18px; font-weight: bold; 
+            font-variant-numeric: tabular-nums; color: var(--text-grey);
         }
 
-        .hidden { display none !important; }
+        .hidden { display: none !important; }
 
- 強制允許輸入與點擊，突破全螢幕或 iOS 的選取限制 
+/* 強制允許輸入與點擊，突破全螢幕或 iOS 的選取限制 */
 input, textarea {
-    user-select auto !important;
-    -webkit-user-select auto !important;
-    touch-action auto !important;
-    pointer-events auto !important;
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    touch-action: auto !important;
+    pointer-events: auto !important;
 }
-    style
-head
-body
+    </style>
+</head>
+<body>
 
-    div id=setupScreen
-        h1 style=margin-bottom 5px; margin-top 10px;公路計時賽 (TT)h1
-        p style=color var(--text-grey); margin-bottom 15px;v5.0 p
+    <div id="setupScreen">
+        <h1 style="margin-bottom: 5px; margin-top: 10px;">公路計時賽 (TT)</h1>
+        <p style="color: var(--text-grey); margin-bottom: 15px;">v5.0 </p>
         
-        div class=global-config-panel
-            div class=config-row
-                label style=font-size16px; font-weightbold;首位發車時間label
-                input type=time id=globalFirstTime class=config-input step=1 value=100000
-            div
-            div class=config-row
-                label style=font-size16px; font-weightbold;發車間距(秒)label
-                input type=number id=globalInterval class=config-input value=60 style=width 80px;
-            div
-            div style=margin-top 5px;
-                label style=font-size14px; color var(--btn-start-green); font-weightbold;車手發車名單 (按順序輸入)label
-                textarea id=globalBibs class=config-textarea placeholder=例如 101, 102, 103... (選填)textarea
-            div
-        div
+        <div class="global-config-panel">
+            <div class="config-row">
+                <label style="font-size:16px; font-weight:bold;">首位發車時間:</label>
+                <input type="time" id="globalFirstTime" class="config-input" step="1" value="10:00:00">
+            </div>
+            <div class="config-row">
+                <label style="font-size:16px; font-weight:bold;">發車間距(秒):</label>
+                <input type="number" id="globalInterval" class="config-input" value="60" style="width: 80px;">
+            </div>
+            <div style="margin-top: 5px;">
+                <label style="font-size:14px; color: var(--btn-start-green); font-weight:bold;">車手發車名單 (按順序輸入):</label>
+                <textarea id="globalBibs" class="config-textarea" placeholder="例如: 101, 102, 103... (選填)"></textarea>
+            </div>
+        </div>
 
-        div class=db-status-panel
-            div style=font-size 18px; font-weight bold; color white;💾 本機暫存記錄div
-            div id=dbRecordCount style=color var(--btn-start-green); margin-top 5px; font-size 16px;已存衝線記錄 0 筆div
-            div class=db-btn-group
-                button class=btn-db btn-export onclick=exportCSV()匯出 CSVbutton
-                button class=btn-db btn-clear onclick=clearLocalData()清除記錄button
-            div
-        div
+        <div class="db-status-panel">
+            <div style="font-size: 18px; font-weight: bold; color: white;">💾 本機暫存記錄</div>
+            <div id="dbRecordCount" style="color: var(--btn-start-green); margin-top: 5px; font-size: 16px;">已存衝線記錄: 0 筆</div>
+            <div class="db-btn-group">
+                <button class="btn-db btn-export" onclick="exportCSV()">匯出 CSV</button>
+                <button class="btn-db btn-clear" onclick="clearLocalData()">清除記錄</button>
+            </div>
+        </div>
         
-        div style=width 100%; max-width 450px; display flex; flex-direction column; gap 5px;
-            button class=mode-btn mode-start onclick=startApp('start')🏁 進入 起點發車button
-            button class=mode-btn mode-finish onclick=startApp('finish')⏱️ 進入 終點衝線button
-        div
-    div
+        <div style="width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 5px;">
+            <button class="mode-btn mode-start" onclick="startApp('start')">🏁 進入 起點發車</button>
+            <button class="mode-btn mode-finish" onclick="startApp('finish')">⏱️ 進入 終點衝線</button>
+        </div>
+    </div>
 
-    div id=mainApp
-        div class=top-bar
-            div style=display flex; align-items center; gap 10px;
-                button class=action-btn onpointerdown=goBack(event)⬅️ 返回button
-                button class=action-btn onpointerdown=toggleFullScreen(event)🔲 全螢幕button
-            div
-            span id=systemClock000000span
-        div
+    <div id="mainApp">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="action-btn" onpointerdown="goBack(event)">⬅️ 返回</button>
+                <button class="action-btn" onpointerdown="toggleFullScreen(event)">🔲 全螢幕</button>
+            </div>
+            <span id="systemClock">00:00:00</span>
+        </div>
 
-        div id=tapArea class=tap-area
-            div id=riderInfo class=info-text hidden等待設定...div
-            div id=mainDisplay class=main-display0000div
-            div id=subDisplay class=sub-display.000div
-        div
+        <div id="tapArea" class="tap-area">
+            <div id="riderInfo" class="info-text hidden">等待設定...</div>
+            <div id="mainDisplay" class="main-display">00:00</div>
+            <div id="subDisplay" class="sub-display">.000</div>
+        </div>
 
-        div id=finishRecords class=records-area hidden
-            div class=records-header
-                span style=font-size 14px; color var(--text-grey);名次  衝線時間(TOD)  運動員號碼  淨時間(Net)span
-            div
-            div id=recordsList class=records-list
-                div
-        div
-    div
+        <div id="finishRecords" class="records-area hidden">
+            <div class="records-header">
+                <span style="font-size: 14px; color: var(--text-grey);">名次 | 衝線時間(TOD) | 運動員號碼 | 淨時間(Net)</span>
+            </div>
+            <div id="recordsList" class="records-list">
+                </div>
+        </div>
+    </div>
 
 
-   script
-         --- 變數宣告區 ---
+   <script>
+        // --- 變數宣告區 ---
         let currentMode = '';
         let audioCtx;
         let animationFrameId;
@@ -234,36 +234,36 @@ body
         let startProfiles = {};    
         let finishModeActive = false;
 
-         【新增】記錄網絡時間與本地時間的誤差
+        // 【新增】記錄網絡時間與本地時間的誤差
         let timeOffsetMs = 0;
 
-         --- 模組 1 Local Storage 資料庫讀寫 與 網絡時間同步 ---
-        document.addEventListener('DOMContentLoaded', () = {
+        // --- 模組 1: Local Storage 資料庫讀寫 與 網絡時間同步 ---
+        document.addEventListener('DOMContentLoaded', () => {
             loadLocalData();
-            syncNetworkTime();  網頁載入時同步時間
+            syncNetworkTime(); // 網頁載入時同步時間
         });
 
-         【新增進階版】同步網絡時間：連續對準 5 次，取最準確（延遲最低）的一次
+        // 【新增進階版】同步網絡時間：連續對準 5 次，取最準確（延遲最低）的一次
         async function syncNetworkTime() {
-            console.log(⏳ 開始精確同步網絡時間...);
+            console.log("⏳ 開始精確同步網絡時間...");
             let bestOffset = 0;
             let lowestLatency = Infinity;
 
-             嘗試同步 5 次
-            for (let i = 0; i  5; i++) {
+            // 嘗試同步 5 次
+            for (let i = 0; i < 5; i++) {
                 try {
                     const startFetch = Date.now();
-                     加上 nocache 防止瀏覽器快取 (Cache) 舊時間
-                    const response = await fetch('httpworldtimeapi.orgapitimezoneAsiaHong_Kongnocache=' + startFetch);
+                    // 加上 ?nocache 防止瀏覽器快取 (Cache) 舊時間
+                    const response = await fetch('http://worldtimeapi.org/api/timezone/Asia/Hong_Kong?nocache=' + startFetch);
                     
                     if (response.ok) {
                         const data = await response.json();
                         const networkTime = new Date(data.datetime).getTime();
                         const endFetch = Date.now();
-                        const latency = (endFetch - startFetch)  2;
+                        const latency = (endFetch - startFetch) / 2;
                         
-                         只保留來回速度最快（延遲最低）的那一次計算結果
-                        if (latency  lowestLatency) {
+                        // 只保留來回速度最快（延遲最低）的那一次計算結果
+                        if (latency < lowestLatency) {
                             lowestLatency = latency;
                             bestOffset = networkTime - (endFetch - latency);
                         }
@@ -275,27 +275,27 @@ body
 
             if (lowestLatency !== Infinity) {
                 timeOffsetMs = bestOffset;
-                console.log(`✅ 精準對時完成！最低單程延遲 ${lowestLatency}ms, 最終調整時差 ${timeOffsetMs}ms`);
+                console.log(`✅ 精準對時完成！最低單程延遲: ${lowestLatency}ms, 最終調整時差: ${timeOffsetMs}ms`);
             } else {
-                console.warn(❌ 完全無法獲取網絡時間，將使用本機系統時間。);
+                console.warn("❌ 完全無法獲取網絡時間，將使用本機系統時間。");
                 timeOffsetMs = 0;
             }
         }
 
-         【新增】獲取經過校準的當前時間
+        // 【新增】獲取經過校準的當前時間
         function getNow() {
             return new Date(Date.now() + timeOffsetMs);
         }
 
         function saveLocalData() {
             const data = {
-                globalFirstTime document.getElementById('globalFirstTime').value,
-                globalInterval document.getElementById('globalInterval').value,
-                globalBibs document.getElementById('globalBibs').value,
-                globalBibOrder globalBibOrder,
-                finishData finishData,
-                seqNum seqNum,
-                startProfiles startProfiles
+                globalFirstTime: document.getElementById('globalFirstTime').value,
+                globalInterval: document.getElementById('globalInterval').value,
+                globalBibs: document.getElementById('globalBibs').value,
+                globalBibOrder: globalBibOrder,
+                finishData: finishData,
+                seqNum: seqNum,
+                startProfiles: startProfiles
             };
             localStorage.setItem('wtcIttDataV4', JSON.stringify(data));
             updateDbStatus();
@@ -310,17 +310,17 @@ body
                     if(data.globalInterval) document.getElementById('globalInterval').value = data.globalInterval;
                     if(data.globalBibs) document.getElementById('globalBibs').value = data.globalBibs;
                     
-                    globalBibOrder = data.globalBibOrder  [];
-                    finishData = data.finishData  [];
-                    seqNum = data.seqNum  1;
-                    startProfiles = data.startProfiles  {};
-                } catch(e) { console.error(Data load error, e); }
+                    globalBibOrder = data.globalBibOrder || [];
+                    finishData = data.finishData || [];
+                    seqNum = data.seqNum || 1;
+                    startProfiles = data.startProfiles || {};
+                } catch(e) { console.error("Data load error", e); }
             }
             updateDbStatus();
         }
 
         function clearLocalData() {
-            if (confirm(⚠️ 警告：這將會刪除所有已儲存的發車名單及衝線記錄，無法復原！確定嗎？)) {
+            if (confirm("⚠️ 警告：這將會刪除所有已儲存的發車名單及衝線記錄，無法復原！確定嗎？")) {
                 localStorage.removeItem('wtcIttDataV4');
                 finishData = [];
                 seqNum = 1;
@@ -328,24 +328,24 @@ body
                 globalBibOrder = [];
                 document.getElementById('globalBibs').value = '';
                 updateDbStatus();
-                alert(🗑️ 記錄已全部清除！);
+                alert("🗑️ 記錄已全部清除！");
             }
         }
 
         function updateDbStatus() {
-            document.getElementById('dbRecordCount').innerText = `已存衝線記錄 ${finishData.length} 筆`;
+            document.getElementById('dbRecordCount').innerText = `已存衝線記錄: ${finishData.length} 筆`;
         }
 
-         --- 模組 2 系統控制 (螢幕喚醒、全螢幕、導覽) ---
+        // --- 模組 2: 系統控制 (螢幕喚醒、全螢幕、導覽) ---
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
                 }
-            } catch (err) { console.log('WakeLock', err.message); }
+            } catch (err) { console.log('WakeLock:', err.message); }
         }
 
-        document.addEventListener('visibilitychange', async () = {
+        document.addEventListener('visibilitychange', async () => {
             if (wakeLock !== null && document.visibilityState === 'visible') {
                 await requestWakeLock();
             }
@@ -354,8 +354,8 @@ body
         function toggleFullScreen(e) {
             e.preventDefault(); e.stopPropagation();
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err = {
-                    alert(⚠️ 您目前的手機瀏覽器不支援全螢幕 API。建議使用「加入主畫面」功能將其變成獨立 App！);
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert("⚠️ 您目前的手機瀏覽器不支援全螢幕 API。建議使用「加入主畫面」功能將其變成獨立 App！");
                 });
             } else {
                 if (document.exitFullscreen) document.exitFullscreen();
@@ -382,34 +382,34 @@ body
             saveLocalData(); 
         }
 
-         --- 模組 3 核心計時與名單邏輯 ---
+        // --- 模組 3: 核心計時與名單邏輯 ---
         function startApp(mode) {
             const timeStr = document.getElementById('globalFirstTime').value;
             const intSec = parseInt(document.getElementById('globalInterval').value);
             const bibsStr = document.getElementById('globalBibs').value;
 
-            if (!timeStr  isNaN(intSec)  intSec = 0) { alert(請填妥起步時間和間距！); return; }
+            if (!timeStr || isNaN(intSec) || intSec <= 0) { alert("請填妥起步時間和間距！"); return; }
 
-            let now = getNow();  【修改】使用校準後的時間
-            let [h, m, s] = timeStr.split('').map(Number);
+            let now = getNow(); // 【修改】使用校準後的時間
+            let [h, m, s] = timeStr.split(':').map(Number);
             if(isNaN(s)) s = 0; 
             
             let baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s);
-            if (baseTime.getTime()  now.getTime() && (now.getTime() - baseTime.getTime())  86400000  2) {
+            if (baseTime.getTime() < now.getTime() && (now.getTime() - baseTime.getTime()) > 86400000 / 2) {
                 baseTime.setDate(baseTime.getDate() + 1);
             }
 
-            intervalMs = intSec  1000;
-            const bibs = bibsStr.split([s,]+).filter(b = b.trim() !== '');
+            intervalMs = intSec * 1000;
+            const bibs = bibsStr.split(/[\s,]+/).filter(b => b.trim() !== '');
             globalBibOrder = bibs; 
             
             if (!startProfiles) startProfiles = {};
-            let currentTime = getNow().getTime();  【修改】使用校準後的時間
+            let currentTime = getNow().getTime(); // 【修改】使用校準後的時間
             let bibCounters = {}; 
 
-             重新分配發車時間
-            bibs.forEach((bib, index) = {
-                let st = new Date(baseTime.getTime() + index  intervalMs);
+            // 重新分配發車時間
+            bibs.forEach((bib, index) => {
+                let st = new Date(baseTime.getTime() + index * intervalMs);
                 let stTime = st.getTime();
                 
                 if (!startProfiles[bib]) startProfiles[bib] = [];
@@ -418,10 +418,10 @@ body
                 if (!bibCounters[bib]) bibCounters[bib] = 0;
                 let runIdx = bibCounters[bib];
 
-                if (startProfiles[bib].length = runIdx) {
+                if (startProfiles[bib].length <= runIdx) {
                     startProfiles[bib].push(stTime);
                 } 
-                else if (startProfiles[bib][runIdx]  currentTime) {
+                else if (startProfiles[bib][runIdx] > currentTime) {
                     startProfiles[bib][runIdx] = stTime;
                 }
                 
@@ -434,7 +434,7 @@ body
 
         function initApp(mode, baseTime) {
             currentMode = mode;
-            if (!audioCtx) audioCtx = new (window.AudioContext  window.webkitAudioContext)();
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             playBeep(20000, 'sine', 10, 0); 
             requestWakeLock();
 
@@ -444,13 +444,13 @@ body
             if (mode === 'start') {
                 document.getElementById('riderInfo').classList.remove('hidden');
                 document.getElementById('subDisplay').classList.add('hidden'); 
-                document.getElementById('mainDisplay').innerText = READY;
+                document.getElementById('mainDisplay').innerText = "READY";
                 
                 nextTargetTime = new Date(baseTime.getTime());
                 currentStartIdx = 0; configLocked = true; lastBeepSec = -1;
 
-                let now = getNow();  【修改】使用校準後的時間
-                while (nextTargetTime.getTime() = now.getTime()) {
+                let now = getNow(); // 【修改】使用校準後的時間
+                while (nextTargetTime.getTime() <= now.getTime()) {
                     nextTargetTime.setTime(nextTargetTime.getTime() + intervalMs);
                     currentStartIdx++;
                 }
@@ -469,41 +469,41 @@ body
         function renderRecordsList() {
             const list = document.getElementById('recordsList');
             list.innerHTML = ''; 
-            [...finishData].reverse().forEach(row = {
+            [...finishData].reverse().forEach(row => {
                 const item = document.createElement('div');
                 item.className = 'record-item';
-                let netColor = row.netTimeStr === 'ERROR'  'var(--status-red)'  (row.netTimeStr && row.netTimeStr !== 'NO_START_TIME'  'var(--btn-start-green)'  'var(--text-grey)');
+                let netColor = row.netTimeStr === 'ERROR' ? 'var(--status-red)' : (row.netTimeStr && row.netTimeStr !== 'NO_START_TIME' ? 'var(--btn-start-green)' : 'var(--text-grey)');
                 item.innerHTML = `
-                    div class=col-seq#${row.seq}div
-                    div class=col-tod${row.time}div
-                    input type=number class=col-bib placeholder=號碼 value=${row.bib  ''} oninput=updateRecord(${row.seq}, this.value)
-                    div class=col-net id=net-${row.seq} style=color ${netColor}${row.netTimeStr  '------.---'}div
+                    <div class="col-seq">#${row.seq}</div>
+                    <div class="col-tod">${row.time}</div>
+                    <input type="number" class="col-bib" placeholder="號碼" value="${row.bib || ''}" oninput="updateRecord(${row.seq}, this.value)">
+                    <div class="col-net" id="net-${row.seq}" style="color: ${netColor}">${row.netTimeStr || '--:--:--.---'}</div>
                 `;
                 list.appendChild(item);
             });
         }
 
-         --- 模組 4 音效系統 ---
+        // --- 模組 4: 音效系統 ---
         function playBeep(freq, type, durationMs, vol = 1) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             const startTime = audioCtx.currentTime + 0.05;
-            const durationSec = durationMs  1000;
+            const durationSec = durationMs / 1000;
 
             osc.type = type; osc.frequency.setValueAtTime(freq, startTime);
             gain.gain.setValueAtTime(0, startTime);
-            gain.gain.linearRampToValueAtTime(vol  0.5, startTime + 0.01);
-            gain.gain.setValueAtTime(vol  0.5, startTime + durationSec - 0.01);
+            gain.gain.linearRampToValueAtTime(vol * 0.5, startTime + 0.01);
+            gain.gain.setValueAtTime(vol * 0.5, startTime + durationSec - 0.01);
             gain.gain.linearRampToValueAtTime(0, startTime + durationSec);
 
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(startTime); osc.stop(startTime + durationSec);
         }
 
-         --- 模組 5 UI 更新迴圈 ---
+        // --- 模組 5: UI 更新迴圈 ---
         function systemLoop() {
-            const now = getNow();  【修改】使用校準後的時間
+            const now = getNow(); // 【修改】使用校準後的時間
             document.getElementById('systemClock').innerText = now.toLocaleTimeString('en-GB');
             if (currentMode === 'start' && configLocked && nextTargetTime) updateStartMode(now);
             else if (currentMode === 'finish') updateFinishMode(now);
@@ -511,8 +511,8 @@ body
         }
 
         function getNextRiderDisplay(idx) {
-            if (globalBibOrder.length  0) {
-                return idx  globalBibOrder.length  `#${globalBibOrder[idx]}`  `#(附加 ${idx + 1})`;
+            if (globalBibOrder.length > 0) {
+                return idx < globalBibOrder.length ? `#${globalBibOrder[idx]}` : `#(附加 ${idx + 1})`;
             }
             return `#${idx + 1}`;
         }
@@ -520,31 +520,31 @@ body
         function updateStartMode(now) {
             let diffMs = nextTargetTime.getTime() - now.getTime();
 
-            if (diffMs = 0) {
+            if (diffMs <= 0) {
                 playBeep(990, 'square', 800); 
                 lastBeepSec = -1; currentStartIdx++;
                 nextTargetTime.setTime(nextTargetTime.getTime() + intervalMs);
                 diffMs = nextTargetTime.getTime() - now.getTime();
                 document.getElementById('tapArea').style.backgroundColor = 'var(--status-green)';
-                setTimeout(() = { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 500);
+                setTimeout(() => { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 500);
             }
 
-            let secLeft = Math.ceil(diffMs  1000);
+            let secLeft = Math.ceil(diffMs / 1000);
             document.getElementById('mainDisplay').innerText = secLeft;
 
-    let listHTML = ;
+    let listHTML = "";
 
             let showNum = 5; 
 
-            for (let i = 0; i  showNum; i++) {
+            for (let i = 0; i < showNum; i++) {
 
                 let idx = currentStartIdx + i;
 
-                if (idx  globalBibOrder.length  globalBibOrder.length === 0) {
+                if (idx < globalBibOrder.length || globalBibOrder.length === 0) {
 
-                    let riderTime = new Date(nextTargetTime.getTime() + (i  intervalMs));
+                    let riderTime = new Date(nextTargetTime.getTime() + (i * intervalMs));
 
-                    let timeStr = riderTime.toLocaleTimeString('en-GB', {hour '2-digit', minute'2-digit', second'2-digit'});
+                    let timeStr = riderTime.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
 
                     let riderName = getNextRiderDisplay(idx);
 
@@ -552,11 +552,11 @@ body
 
                     if (i === 0) {
 
-                        listHTML += `div style=color #00ff00; font-weight bold; font-size 1.8em; margin-bottom 5px;NEXT ${timeStr} - ${riderName}div`;
+                        listHTML += `<div style="color: #00ff00; font-weight: bold; font-size: 1.8em; margin-bottom: 5px;">NEXT: ${timeStr} - ${riderName}</div>`;
 
                     } else {
 
-                        listHTML += `div style=color #bbb; font-size 1.2em;${timeStr} - ${riderName}div`;
+                        listHTML += `<div style="color: #bbb; font-size: 1.2em;">${timeStr} - ${riderName}</div>`;
 
                     }
 
@@ -564,101 +564,101 @@ body
 
             }
 
-            document.getElementById('riderInfo').innerHTML = listHTML  名單已結束;
+            document.getElementById('riderInfo').innerHTML = listHTML || "名單已結束";
 
             if (secLeft !== lastBeepSec) {
-                if (secLeft === 30  secLeft === 10  (secLeft = 5 && secLeft  0)) playBeep(490, 'square', 400); 
+                if (secLeft === 30 || secLeft === 10 || (secLeft <= 5 && secLeft > 0)) playBeep(490, 'square', 400); 
                 lastBeepSec = secLeft;
             }
-             🎨 控制最後 10 秒字體轉黃色 (#FFD700 係一種好搶眼嘅金黃色)
-document.getElementById('mainDisplay').style.color = secLeft = 10  '#FFD700'  'var(--text-color)';
+            // 🎨 控制最後 10 秒字體轉黃色 (#FFD700 係一種好搶眼嘅金黃色)
+document.getElementById('mainDisplay').style.color = secLeft <= 10 ? '#FFD700' : 'var(--text-color)';
         }
 
         function updateFinishMode(now) {
             let h = String(now.getHours()).padStart(2, '0'); let m = String(now.getMinutes()).padStart(2, '0');
             let s = String(now.getSeconds()).padStart(2, '0'); let ms = String(now.getMilliseconds()).padStart(3, '0');
-            document.getElementById('mainDisplay').innerText = `${h}${m}${s}`; document.getElementById('subDisplay').innerText = `.${ms}`;
+            document.getElementById('mainDisplay').innerText = `${h}:${m}:${s}`; document.getElementById('subDisplay').innerText = `.${ms}`;
         }
 
-         --- 模組 6 衝線與匯出邏輯 ---
+        // --- 模組 6: 衝線與匯出邏輯 ---
         function handleFinishTap(e) {
             if(!finishModeActive) return;
             e.preventDefault(); 
             
-            const tapTime = getNow();  【修改】使用校準後的時間記錄衝線
+            const tapTime = getNow(); // 【修改】使用校準後的時間記錄衝線
             let h = String(tapTime.getHours()).padStart(2, '0'); let m = String(tapTime.getMinutes()).padStart(2, '0');
             let s = String(tapTime.getSeconds()).padStart(2, '0'); let ms = String(tapTime.getMilliseconds()).padStart(3, '0');
-            let timeString = `${h}${m}${s}.${ms}`;
+            let timeString = `${h}:${m}:${s}.${ms}`;
 
-            finishData.push({ seq seqNum, time timeString, todMs tapTime.getTime(), bib '', netTimeStr '' });
+            finishData.push({ seq: seqNum, time: timeString, todMs: tapTime.getTime(), bib: '', netTimeStr: '' });
             saveLocalData();
 
             const list = document.getElementById('recordsList');
             const item = document.createElement('div');
             item.className = 'record-item';
             item.innerHTML = `
-                div class=col-seq#${seqNum}div
-                div class=col-tod${timeString}div
-                input type=number class=col-bib placeholder=車牌 oninput=updateRecord(${seqNum}, this.value)
-                div class=col-net id=net-${seqNum}------.---div
+                <div class="col-seq">#${seqNum}</div>
+                <div class="col-tod">${timeString}</div>
+                <input type="number" class="col-bib" placeholder="車牌" oninput="updateRecord(${seqNum}, this.value)">
+                <div class="col-net" id="net-${seqNum}">--:--:--.---</div>
             `;
             list.prepend(item); 
             seqNum++;
             playBeep(1200, 'square', 100);
             document.getElementById('tapArea').style.backgroundColor = '#333';
-            setTimeout(() = { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 100);
+            setTimeout(() => { document.getElementById('tapArea').style.backgroundColor = 'var(--bg-color)'; }, 100);
         }
 
         function updateRecord(seq, bibValue) {
-            const record = finishData.find(r = r.seq === seq);
+            const record = finishData.find(r => r.seq === seq);
             if (!record) return;
             const bib = bibValue.trim();
             record.bib = bib;
             const netSpan = document.getElementById(`net-${seq}`);
 
-            if (bib === ) {
-                netSpan.innerText = ------.---; netSpan.style.color = var(--text-grey); record.netTimeStr = ; 
+            if (bib === "") {
+                netSpan.innerText = "--:--:--.---"; netSpan.style.color = "var(--text-grey)"; record.netTimeStr = ""; 
             } else if (startProfiles[bib]) {
                 let validStarts = [];
                 if (Array.isArray(startProfiles[bib])) {
-                    validStarts = startProfiles[bib].filter(t = t = record.todMs);
+                    validStarts = startProfiles[bib].filter(t => t <= record.todMs);
                 } else {
-                    if (startProfiles[bib] = record.todMs) validStarts.push(startProfiles[bib]);
+                    if (startProfiles[bib] <= record.todMs) validStarts.push(startProfiles[bib]);
                 }
 
-                if (validStarts.length  0) {
+                if (validStarts.length > 0) {
                     let bestStart = validStarts[validStarts.length - 1];
                     const netMs = record.todMs - bestStart;
                     
                     const formatted = formatNetTime(netMs);
-                    netSpan.innerText = formatted; netSpan.style.color = var(--btn-start-green); record.netTimeStr = formatted;
+                    netSpan.innerText = formatted; netSpan.style.color = "var(--btn-start-green)"; record.netTimeStr = formatted;
                 } else {
-                    netSpan.innerText = 尚未發車; netSpan.style.color = var(--status-red); record.netTimeStr = ERROR;
+                    netSpan.innerText = "尚未發車"; netSpan.style.color = "var(--status-red)"; record.netTimeStr = "ERROR";
                 }
             } else {
-                netSpan.innerText = 無起步記錄; netSpan.style.color = var(--text-grey); record.netTimeStr = NO_START_TIME;
+                netSpan.innerText = "無起步記錄"; netSpan.style.color = "var(--text-grey)"; record.netTimeStr = "NO_START_TIME";
             }
             saveLocalData();
         }
 
         function formatNetTime(ms) {
-            let totalSec = Math.floor(ms  1000); let remMs = ms % 1000;
-            let h = Math.floor(totalSec  3600); let m = Math.floor((totalSec % 3600)  60); let s = totalSec % 60;
-            let hStr = h  0  String(h).padStart(2, '0') + ''  '';
-            return `${hStr}${String(m).padStart(2, '0')}${String(s).padStart(2, '0')}.${String(remMs).padStart(3, '0')}`;
+            let totalSec = Math.floor(ms / 1000); let remMs = ms % 1000;
+            let h = Math.floor(totalSec / 3600); let m = Math.floor((totalSec % 3600) / 60); let s = totalSec % 60;
+            let hStr = h > 0 ? String(h).padStart(2, '0') + ':' : '';
+            return `${hStr}${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(remMs).padStart(3, '0')}`;
         }
 
         function exportCSV() {
             if (finishData.length === 0) { alert('無記錄可匯出'); return; }
-            let csvContent = uFEFF順序,衝線真實時間(TOD),運動員號碼,淨時間(Net Time)n;
-            finishData.forEach(row = { csvContent += `${row.seq},${row.time},${row.bib  ''},${row.netTimeStr  ''}n`; });
+            let csvContent = "\uFEFF順序,衝線真實時間(TOD),運動員號碼,淨時間(Net Time)\n";
+            finishData.forEach(row => { csvContent += `${row.seq},${row.time},${row.bib || ''},${row.netTimeStr || ''}\n`; });
             
-            const blob = new Blob([csvContent], { type 'textcsv;charset=utf-8;' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement(a);
-            link.setAttribute(href, url); link.setAttribute(download, `itt_result_${getNow().toISOString().slice(0,10)}.csv`);
+            const link = document.createElement("a");
+            link.setAttribute("href", url); link.setAttribute("download", `itt_result_${getNow().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
         }
-script
-body
-html
+</script>
+</body>
+</html>
