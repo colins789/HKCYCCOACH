@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>WTC Cycle Timer v6.4 (Refined)</title>
+    <style>
+        /* --- 全域重設及變數 --- */
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --status-green: #1b5e20;
+            --status-red: #b71c1c;
+            --status-grey: #505050;
+            --text-grey: #aaaaaa;
+            --btn-start-green: #00e676;
+            --btn-finish-red: #ff1744;
+            --btn-reset-blue: #2979ff;
+            --btn-share-purple: #651fff;
+            --btn-history-orange: #ff9800;
+            --alert-yellow: #ffd600;
+            --alert-orange: #ff6d00;
+            --alert-red: #ff1744;
+            --lap-running-color: #00e5ff;
+            --audio-active-color: #00e676;
+            --audio-loading-color: #ffeb3b;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* --- 畫面1: 計時器介面 --- */
+        .screen-timer {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        /* 1. 標頭區塊 */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            min-height: 80px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0));
+            z-index: 500;
+            padding-top: max(10px, env(safe-area-inset-top));
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .header > * { pointer-events: auto; }
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+            transition: opacity 0.2s;
+        }
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-right {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            z-index: 600;
+            align-items: flex-start;
+        }
+
+        /* 輸入欄位樣式 */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 0 1px 2px #000;
+            background: rgba(60,60,60,0.7);
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
+        input[type="number"] {
+            background: rgba(30, 30, 30, 1);
+            border: 1px solid #888;
+            color: #fff;
+            padding: 8px 4px;
+            border-radius: 4px;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .input-gear { width: 60px; }
+        .input-dist { width: 80px; }
+        .input-laps { width: 60px; }
+        .label-text { font-size: 0.8rem; color: #bbb; margin-right: 2px;}
+
+        /* 音頻按鈕 */
+        .btn-audio {
+            background: rgba(60, 60, 60, 0.7);
+            border: 1px solid #888;
+            color: #888;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            margin-left: 5px;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-audio::before, .btn-icon-round::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: transparent;
+            z-index: 1;
+        }
+
+        .btn-audio > *, .btn-icon-round > * {
+            pointer-events: none;
+        }
+
+        .btn-audio.loading {
+            border-color: var(--audio-loading-color);
+            color: var(--audio-loading-color);
+            animation: pulse-border 1.5s infinite;
+        }
+
+        .btn-audio.active {
+            background: rgba(0, 50, 0, 0.9);
+            color: var(--audio-active-color);
+            border-color: var(--audio-active-color);
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 235, 59, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0); }
+        }
+
+        .btn-icon-round {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: rgba(40,40,40,0.9);
+            color: #fff;
+            margin-left: 5px;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        #historyBtn {
+            color: var(--btn-history-orange);
+            border-color: var(--btn-history-orange);
+            border-radius: 6px;
+        }
+
+        .btn-mini-reset {
+            background: #d32f2f;
+            border: 1px solid #ff5252;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            touch-action: manipulation;
+            padding: 0 15px;
+            height: 50px;
+            min-width: 90px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: absolute;
+            left: 10px;
+            top: max(10px, env(safe-area-inset-top));
+            z-index: 2000;
+        }
+       
+        .btn-mini-reset:active { transform: scale(0.95); opacity: 0.9; }
+        
+        .btn-header-share {
+            background: var(--btn-share-purple);
+            border: 1px solid #fff;
+            padding: 0 15px;
+            height: 45px;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+       
+        .btn-header-share:active {
+            transform: scale(0.95);
+            background-color: #512da8;
+        }
+
+        /* 2. 主要點擊區域 */
+        .tap-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            padding-top: 0;
+        }
+
+        /* 3. 浮動動作按鈕 */
+        .floating-action-container {
+            position: absolute;
+            bottom: 20%;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+        }
+        .action-btn {
+            width: 100px;
+            height: 100px;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            line-height: 1.1;
+            padding: 10px;
+        }
+       
+        .action-btn:active { transform: scale(0.9); }
+        .btn-start { background-color: var(--btn-start-green); color: #000; border: 3px solid #fff; }
+        .btn-finish { background-color: var(--btn-finish-red); color: #fff; border: 3px solid #fff; }
+
+        /* 顯示元素 */
+        .info-corner {
+            position: absolute;
+            font-family: monospace;
+            opacity: 0.7;
+            z-index: 5;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+       
+        .top-left {
+            top: 150px;
+            left: 20px;
+            color: #fff;
+            line-height: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .lap-info-row {
+            display: none;
+            align-items: baseline;
+            gap: 8px;
+        }
+        #lapCounter {
+            font-size: 10vmin;
+            font-weight: bold;
+            line-height: 0.9;
+        }
+        #lapsRemaining {
+            font-size: 4vmin;
+            color: var(--alert-yellow);
+            font-weight: bold;
+            display: none;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .branding-text {
+            font-size: 10px;
+            font-family: sans-serif;
+            color: #888;
+            font-style: italic;
+            margin-top: 5px;
+            opacity: 0.8;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+       
+        .top-right {
+            top: 150px;
+            right: 20px;
+            text-align: right;
+        }
+        #totalTimer { font-size: 5vmin; color: #fff; display: block; font-weight: bold; }
+        #runningLapTimer { font-size: 4vmin; color: var(--lap-running-color); display: block; margin-top: 5px; font-weight: bold; }
+        
+        .coach-display {
+            font-size: 45vmin;
+            font-weight: 900;
+            line-height: 0.9;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.05em;
+            margin-top: -5vh;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            padding-right: 10vw;
+        }
+        .sub-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 0;
+            padding-right: 10vw;
+        }
+        .full-display { font-size: 8vmin; font-family: monospace; opacity: 0.8; font-weight: bold; }
+       
+        .diff-display {
+            font-size: 6vmin;
+            font-weight: bold;
+            margin-top: 1vh;
+            padding: 0.5vmin 2vmin;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            min-height: 7vmin;
+        }
+        .waiting-text {
+            font-size: 8vmin;
+            color: #888;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.2;
+            padding-right: 10vw;
+        }
+       
+        .countdown-number {
+            font-size: 50vmin;
+            color: var(--alert-yellow);
+            font-weight: 900;
+            line-height: 1;
+            display: block;
+            text-shadow: 0 0 10px #000;
+        }
+
+        .alert-overlay {
+            position: absolute;
+            top: 75%;
+            transform: translateY(-50%);
+            left: 20px;
+            width: auto;
+            pointer-events: none;
+            z-index: 25;
+            display: none;
+        }
+        .alert-text {
+            font-size: 3.5vmin;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+            background: rgba(0,0,0,0.85);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .bg-faster { background-color: var(--status-green) !important; }
+        .bg-slower { background-color: var(--status-red) !important; }
+        .bg-stable { background-color: var(--status-grey) !important; }
+
+        /* --- 畫面2: 摘要介面 --- */
+        .screen-summary {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 2000;
+        }
+        .summary-header-bar {
+            flex: 0 0 90px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #111;
+            border-bottom: 2px solid #333;
+            z-index: 3000;
+            padding-top: max(10px, env(safe-area-inset-top));
+        }
+        .summary-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .summary-label { font-size: 0.8rem; color: #888; }
+        .summary-total { font-size: 1.5rem; font-weight: bold; color: #fff; font-family: monospace; }
+        .summary-sub { font-size: 0.9rem; color: #00bcd4; font-weight: bold; margin-top: 2px;}
+
+        .summary-header-right {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            z-index: 3001;
+            align-items: center;
+        }
+        .btn-icon-sq {
+            width: 45px;
+            height: 45px;
+            background: #333;
+            border: 1px solid #777;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .btn-icon-sq:active { background: #555; }
+        .btn-settings {
+            width: 45px;
+            height: 45px;
+            background: #333;
+            border: 1px solid #777;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .report-options-menu {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 4000;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            min-width: 180px;
+        }
+       
+        .report-options-menu.show { display: flex; }
+        .report-option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #eee;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .report-option-item input {
+            transform: scale(1.3);
+            margin: 0;
+        }
+
+        .summary-content {
+            flex: 1;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+            padding: 0;
+            padding-bottom: 30vh;
+        }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 4vmin; }
+        .summary-table th {
+            position: sticky;
+            top: 0;
+            background: #222;
+            color: #aaa;
+            padding: 10px;
+            text-transform: uppercase;
+            font-size: 3vmin;
+            z-index: 15;
+        }
+        .summary-table td {
+            padding: 1.5vh 1vw;
+            text-align: center;
+            border-bottom: 1px solid #222;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .row-faster { color: #69f0ae; }
+        .row-slower { color: #ff5252; }
+        .row-stable { color: var(--text-grey); }
+        .row-lap-num { color: #fff; }
+
+        /* --- 畫面3: 歷史畫面 --- */
+        .screen-history {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 5000;
+            flex-direction: column;
+            padding-top: max(10px, env(safe-area-inset-top));
+        }
+        .history-header {
+            flex: 0 0 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 1px solid #333;
+            background: #111;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .history-title { font-size: 1.2rem; font-weight: bold; color: #aaa; }
+        .btn-close-history { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; padding: 10px;}
+
+        .btn-hist-mini {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+            touch-action: manipulation;
+        }
+        .btn-hist-mini:active { transform: scale(0.95); opacity: 0.9; }
+        .btn-dl-all { background: var(--status-green); color: #000; }
+        .btn-clear-all { background: #ff4444; color: #fff; }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            padding-bottom: 50px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .history-item {
+            background: #222;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .history-item:active { background: #333; }
+        
+        .hist-info { display: flex; flex-direction: column; gap: 4px; }
+        .hist-date { font-size: 0.9rem; color: #aaa; }
+        .hist-main { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .hist-meta { font-size: 0.9rem; color: #00bcd4; }
+        
+        .toast {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            display: none;
+            z-index: 9999;
+            width: max-content;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            font-size: 1.2rem;
+        }
+        
+        .summary-footer-bar {
+            padding: 15px;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .btn-footer {
+            flex: 1;
+            height: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+        #nextSessionBtn { background: var(--btn-start-green); color: #000; }
+    </style>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="screenTimer" class="screen-timer">
+        <div id="mainHeader" class="header">
+            <div class="header-left">
+                <div class="header-row">
+                    <div class="input-group">
+                        <span class="label-text">GEAR</span>
+                        <input type="number" id="gearFront" class="input-gear" placeholder="F" value="">
+                        <span style="color:#888;">x</span>
+                        <input type="number" id="gearRear" class="input-gear" placeholder="R" value="">
+                    </div>
+                    <div class="input-group">
+                        <span class="label-text">DIST</span>
+                        <input type="number" id="distInput" class="input-dist" placeholder="m" value="">
+                        <span style="font-size:0.7rem;">m</span>
+                    </div>
+                </div>
+                <div class="header-row">
+                    <div class="input-group">
+                        <span class="label-text">LAPS</span>
+                        <input type="number" id="totalLapsInput" class="input-laps" placeholder="">
+                    </div>
+                    <button id="audioBtn" class="btn-audio">🎵</button>
+                    <button id="historyBtn" class="btn-icon-round">📜</button>
+                    <button id="fullscreenBtn" class="btn-icon-round">⛶</button>
+                </div>
+            </div>
+            <div class="header-right"></div>
+        </div>
+        
+        <input type="file" id="audioInput" accept="audio/*" style="display:none;">
+        <audio id="countdownAudio" preload="auto" style="display:none;"></audio>
+        <button id="topResetBtn" class="btn-mini-reset">Reset</button>
+        
+        <div id="tapArea" class="tap-area">
+            <div class="info-corner top-left">
+                <div class="lap-info-row" id="lapInfoRow">
+                    <div id="lapCounter">0</div>
+                </div>
+                <div id="lapsRemaining"></div>
+                <div class="branding-text">by Woody Wong v6.4</div>
+            </div>
+           
+            <div class="info-corner top-right">
+                <div id="totalTimer">00:00.00</div>
+                <div id="runningLapTimer">00:00.00</div>
+            </div>
+            
+            <div id="alertOverlay" class="alert-overlay">
+                <div id="alertText" class="alert-text">10 LAPS LEFT</div>
+            </div>
+            
+            <div id="waitingText" class="waiting-text">
+                TAP ANYWHERE<br>TO START
+            </div>
+            
+            <div id="activeDisplay" style="display:none; width:100%;">
+                <div id="coachDisplay" class="coach-display">--.-</div>
+                <div class="sub-display-container">
+                    <div id="fullDisplay" class="full-display">--.---</div>
+                    <div id="diffDisplay" class="diff-display"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="floating-action-container">
+            <button id="mainBtn" class="action-btn btn-start">START</button>
+        </div>
+    </div>
+
+    <div id="screenSummary" class="screen-summary">
+        <div class="summary-header-bar">
+            <div class="summary-info">
+                <span class="summary-label">TOTAL TIME</span>
+                <span id="finalTotalTime" class="summary-total">00:00.000</span>
+                <span id="summaryGearInfo" class="summary-sub"></span>
+            </div>
+            <div class="summary-header-right">
+                <button id="csvBtn" class="btn-icon-sq" title="Download CSV">💾</button>
+                <button id="settingsBtn" class="btn-settings">⚙️</button>
+                <button id="shareBtn" class="btn-header-share">SHARE</button>
+            </div>
+        </div>
+        
+        <div id="reportMenu" class="report-options-menu">
+            <div style="color:#aaa; font-size:0.8rem; margin-bottom:5px; font-weight:bold;">REPORT OPTIONS</div>
+            <div style="background:#333; padding:5px; border-radius:5px; margin-bottom:5px;">
+                <label class="report-option-item" style="font-weight:bold; color:var(--alert-yellow);">
+                    <input type="checkbox" id="optTotalMode"> Use Last Lap Total
+                </label>
+                <label class="report-option-item" style="font-weight:bold; color:#25D366;">
+                    <input type="checkbox" id="optWhatsApp"> WhatsApp Format
+                </label>
+            </div>
+            <label class="report-option-item"><input type="checkbox" id="optDate" checked> Date</label>
+            <label class="report-option-item"><input type="checkbox" id="optStartTime" checked> Start Time</label>
+            <label class="report-option-item"><input type="checkbox" id="optTotal" checked> Total Time</label>
+            <label class="report-option-item"><input type="checkbox" id="optGear" checked> Gear String</label>
+            <label class="report-option-item"><input type="checkbox" id="optDist" checked> Distance</label>
+            <label class="report-option-item"><input type="checkbox" id="optLaps" checked> Lap Count</label>
+            <label class="report-option-item"><input type="checkbox" id="optTable" checked> Split Table</label>
+            <label class="report-option-item"><input type="checkbox" id="optAudioToggle" checked> Audio Countdown</label>
+        </div>
+
+        <div class="summary-content">
+            <table class="summary-table" id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>Lap</th>
+                        <th>Split</th>
+                        <th>Total</th>
+                        <th>Diff</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryBody"></tbody>
+            </table>
+        </div>
+        <div class="summary-footer-bar">
+            <button id="nextSessionBtn" class="btn-footer">NEXT SESSION</button>
+        </div>
+    </div>
+
+    <div id="screenHistory" class="screen-history">
+        <div class="history-header">
+            <button id="closeHistoryBtn" class="btn-close-history">✕</button>
+            <div class="history-title">SESSION HISTORY</div>
+            <div class="history-actions">
+                <button id="dlAllCsvBtn" class="btn-hist-mini btn-dl-all">CSV</button>
+                <button id="clearAllBtn" class="btn-hist-mini btn-clear-all">Clear</button>
+            </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // --- 全域狀態變數 ---
+        let isRunning = false;
+        window.isCountingDown = false;
+        let startTime = 0;
+        let audioFileLoaded = false;
+        let laps = [];
+        let timerInterval;
+        let lastLapTime = 0;
+        let lapCount = 0;
+        let alertTimeout;
+        let sessionDate = null;
+        let wakeLock = null;
+        let countdownTimeouts = [];
+        let sessionHistory = [];
+
+        let reportOptions = { 
+            date: true, startTime: true, total: true, gear: true, dist: true, 
+            laps: true, table: true, audioStart: true, totalFromLastLap: false, whatsAppFormat: false 
+        };
+
+        // --- DOM 元素獲取 ---
+        const screenTimer = document.getElementById('screenTimer');
+        const screenSummary = document.getElementById('screenSummary');
+        const screenHistory = document.getElementById('screenHistory');
+        const mainHeader = document.getElementById('mainHeader');
+        const mainBtn = document.getElementById('mainBtn');
+        const topResetBtn = document.getElementById('topResetBtn');
+        const tapArea = document.getElementById('tapArea');
+        const audioBtn = document.getElementById('audioBtn');
+        const audioInput = document.getElementById('audioInput');
+        const countdownAudio = document.getElementById('countdownAudio');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const reportMenu = document.getElementById('reportMenu');
+        const summaryTable = document.getElementById('summaryTable');
+        const waitingTextEl = document.getElementById('waitingText');
+        const historyBtn = document.getElementById('historyBtn');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+        const historyListEl = document.getElementById('historyList');
+        const csvBtn = document.getElementById('csvBtn');
+        const dlAllCsvBtn = document.getElementById('dlAllCsvBtn');
+        const nextSessionBtn = document.getElementById('nextSessionBtn');
+        const toast = document.getElementById('toast');
+
+        // 輸入欄位
+        const totalLapsInput = document.getElementById('totalLapsInput');
+        const gearFrontInput = document.getElementById('gearFront');
+        const gearRearInput = document.getElementById('gearRear');
+        const distInput = document.getElementById('distInput');
+
+        // 核取方塊
+        const optDate = document.getElementById('optDate');
+        const optStartTime = document.getElementById('optStartTime');
+        const optTotal = document.getElementById('optTotal');
+        const optGear = document.getElementById('optGear');
+        const optDist = document.getElementById('optDist');
+        const optLaps = document.getElementById('optLaps');
+        const optTable = document.getElementById('optTable');
+        const optAudioToggle = document.getElementById('optAudioToggle');
+        const optTotalMode = document.getElementById('optTotalMode');
+        const optWhatsApp = document.getElementById('optWhatsApp');
+
+        const lapCounterEl = document.getElementById('lapCounter');
+        const lapsRemainingEl = document.getElementById('lapsRemaining');
+        const lapInfoRow = document.getElementById('lapInfoRow');
+        const totalTimerEl = document.getElementById('totalTimer');
+        const runningLapTimerEl = document.getElementById('runningLapTimer');
+        const activeDisplayEl = document.getElementById('activeDisplay');
+        const coachDisplayEl = document.getElementById('coachDisplay');
+        const fullDisplayEl = document.getElementById('fullDisplay');
+        const diffDisplayEl = document.getElementById('diffDisplay');
+        const alertOverlay = document.getElementById('alertOverlay');
+        const alertText = document.getElementById('alertText');
+        const summaryBody = document.getElementById('summaryBody');
+        const finalTotalTimeEl = document.getElementById('finalTotalTime');
+        const summaryGearInfo = document.getElementById('summaryGearInfo');
+
+        // --- 核心音效調度器 (Web Audio API Scheduler Strategy) ---
+        // 解決應用退至背景或切換時，標準 JavaScript setTimeout 鏈結直接中斷的問題
+        function playTrackBeep(isFinal, timeOffset = 0) {
+            try {
+                if (!window.sharedAudioCtx) {
+                    window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const audioCtx = window.sharedAudioCtx;
+                
+                // 如果音訊被掛起，嘗試喚醒
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                const freq = isFinal ? 990 : 490;
+                const duration = isFinal ? 0.8 : 0.4;
+                
+                oscillator.type = 'square';
+                
+                // 使用硬體音訊時間軸準確進行排程調度
+                const targetTime = audioCtx.currentTime + timeOffset;
+                
+                oscillator.frequency.setValueAtTime(freq, targetTime);
+                gainNode.gain.setValueAtTime(0, targetTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, targetTime + 0.01);
+                gainNode.gain.setValueAtTime(0.5, targetTime + duration - 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, targetTime + duration);
+                
+                oscillator.start(targetTime);
+                oscillator.stop(targetTime + duration);
+            } catch (err) {
+                console.error("Audio generation failed: ", err);
+            }
+        }
+
+        // --- 螢幕喚醒鎖處理機制 (Wake Lock API) ---
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock is active.');
+                }
+            } catch (err) {
+                console.warn(`Wake Lock request failed: ${err.message}`);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => {
+                    wakeLock = null;
+                    console.log('Screen Wake Lock was released.');
+                });
+            }
+        }
+
+        // --- 載入與初始化設定數據 ---
+        function loadSettings() {
+            const saved = localStorage.getItem('wtc_report_options_v4');
+            if (saved) {
+                try {
+                    reportOptions = JSON.parse(saved);
+                    optDate.checked = !!reportOptions.date;
+                    optStartTime.checked = !!reportOptions.startTime;
+                    optTotal.checked = !!reportOptions.total;
+                    optGear.checked = !!reportOptions.gear;
+                    optDist.checked = !!reportOptions.dist;
+                    optLaps.checked = !!reportOptions.laps;
+                    optTable.checked = !!reportOptions.table;
+                    optAudioToggle.checked = !!reportOptions.audioStart;
+                    optTotalMode.checked = !!reportOptions.totalFromLastLap;
+                    optWhatsApp.checked = !!reportOptions.whatsAppFormat;
+                } catch(e) { console.error(e); }
+            }
+            const savedHistory = localStorage.getItem('wtc_session_history');
+            if (savedHistory) {
+                try { sessionHistory = JSON.parse(savedHistory); } catch(e) { console.error(e); }
+            }
+            updateAudioBtnState();
+        }
+
+        function saveSettings() {
+            reportOptions = {
+                date: optDate.checked,
+                startTime: optStartTime.checked,
+                total: optTotal.checked,
+                gear: optGear.checked,
+                dist: optDist.checked,
+                laps: optLaps.checked,
+                table: optTable.checked,
+                audioStart: optAudioToggle.checked,
+                totalFromLastLap: optTotalMode.checked,
+                whatsAppFormat: optWhatsApp.checked
+            };
+            localStorage.setItem('wtc_report_options_v4', JSON.stringify(reportOptions));
+            summaryTable.style.display = reportOptions.table ? 'table' : 'none';
+            updateAudioBtnState();
+            if (screenSummary.style.display === 'flex') {
+                renderSummaryData();
+            }
+        }
+
+        function updateAudioBtnState() {
+            if (optAudioToggle.checked) {
+                audioBtn.classList.add('active');
+                audioBtn.textContent = "🔊";
+            } else {
+                audioBtn.classList.remove('active');
+                audioBtn.textContent = "🔇";
+            }
+        }
+
+        // --- 排程倒數核心邏輯 ---
+        function triggerStart() {
+            if (window.isCountingDown || isRunning) return;
+
+            // 喚醒與重啟音訊環境
+            try {
+                if (!window.sharedAudioCtx) {
+                    window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (window.sharedAudioCtx.state === 'suspended') {
+                    window.sharedAudioCtx.resume();
+                }
+            } catch (err) { console.log(err); }
+
+            requestWakeLock();
+
+            if (optAudioToggle.checked) {
+                window.isCountingDown = true;
+                waitingTextEl.innerHTML = "";
+                document.querySelector('.header-left').style.opacity = '0';
+                document.querySelector('.header-left').style.pointerEvents = 'none';
+                tapArea.style.pointerEvents = 'none';
+                mainBtn.style.pointerEvents = 'none';
+                topResetBtn.style.display = 'flex';
+
+                const totalSeconds = 5;
+                const bufferPadding = 0.1; // 緩衝時間修正
+
+                // 核心修復：音訊節點硬件計時器提前批量排程，防止背景暫停切換
+                for (let i = totalSeconds; i >= 0; i--) {
+                    const audioOffset = (totalSeconds - i) + bufferPadding;
+                    if (i > 0) {
+                        playTrackBeep(false, audioOffset);
+                    } else {
+                        playTrackBeep(true, audioOffset);
+                    }
+                }
+
+                // 畫面 UI 顯示的自修正排程同步機制 (補償機制)
+                let startTimeExpected = Date.now() + 100; 
+                for (let i = totalSeconds; i >= 0; i--) {
+                    const uiDelay = (totalSeconds - i) * 1000 + 100;
+                    
+                    let t = setTimeout(() => {
+                        if (!window.isCountingDown) return;
+                        if (i > 0) {
+                            waitingTextEl.innerHTML = `<span class="countdown-number">${i}</span>`;
+                        } else {
+                            window.isCountingDown = false;
+                            waitingTextEl.innerHTML = "";
+                            startSession();
+                        }
+                    }, uiDelay);
+                    countdownTimeouts.push(t);
+                }
+            } else {
+                startSession();
+            }
+        }
+
+        function startSession() {
+            isRunning = true;
+            window.isCountingDown = false;
+            sessionDate = new Date();
+            startTime = Date.now();
+            lastLapTime = startTime;
+            lapCount = 0;
+            laps = [];
+
+            // UI 初始化還原
+            document.querySelector('.header-left').style.opacity = '0';
+            document.querySelector('.header-left').style.pointerEvents = 'none';
+            tapArea.style.pointerEvents = 'auto';
+            mainBtn.style.pointerEvents = 'auto';
+            
+            topResetBtn.style.display = 'flex';
+            waitingTextEl.style.display = 'none';
+            activeDisplayEl.style.display = 'block';
+            lapInfoRow.style.display = 'flex';
+
+            mainBtn.textContent = "LAP";
+            mainBtn.className = "action-btn btn-finish";
+
+            coachDisplayEl.textContent = "0.0";
+            fullDisplayEl.textContent = "0.000";
+            diffDisplayEl.textContent = "START";
+            tapArea.className = "tap-area bg-stable";
+
+            updateLapsRemaining();
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerUI, 10);
+        }
+
+        function updateTimerUI() {
+            if (!isRunning) return;
+            const now = Date.now();
+            totalTimerEl.textContent = formatTime(now - startTime);
+            runningLapTimerEl.textContent = formatTime(now - lastLapTime);
+        }
+
+        function lap() {
+            if (!isRunning) return;
+            const now = Date.now();
+            const lapDuration = now - lastLapTime;
+            const totalDuration = now - startTime;
+            lastLapTime = now;
+            lapCount++;
+
+            let diff = 0;
+            let colorClass = "bg-stable";
+
+            if (laps.length > 0) {
+                const prevLap = laps[laps.length - 1].splitTime;
+                diff = lapDuration - prevLap;
+                const diffSec = diff / 1000;
+                if (Math.abs(diffSec) <= 0.3) {
+                    colorClass = "bg-stable";
+                } else if (diff < 0) {
+                    colorClass = "bg-faster";
+                } else {
+                    colorClass = "bg-slower";
+                }
+            }
+
+            laps.push({
+                lapNum: lapCount,
+                splitTime: lapDuration,
+                totalTime: totalDuration,
+                diff: diff,
+                status: colorClass
+            });
+
+            lapCounterEl.textContent = lapCount;
+            updateLapsRemaining();
+
+            coachDisplayEl.textContent = formatCoachStyle(lapDuration);
+            fullDisplayEl.textContent = (lapDuration / 1000).toFixed(3);
+
+            if (lapCount > 1) {
+                const diffSec = (diff / 1000).toFixed(2);
+                const sign = diff > 0 ? "+" : "";
+                diffDisplayEl.textContent = `${sign}${diffSec}s`;
+            } else {
+                diffDisplayEl.textContent = "Start";
+            }
+
+            tapArea.className = `tap-area ${colorClass}`;
+
+            // 檢查預設總圈數警報
+            const totalLaps = parseInt(totalLapsInput.value);
+            if (!isNaN(totalLaps) && totalLaps > 0) {
+                const remaining = totalLaps - lapCount;
+                if (remaining === 10) showAlert("10 LAPS LEFT", "#ffd600");
+                else if (remaining === 5) showAlert("5 LAPS LEFT", "#ff6d00");
+                else if (remaining === 1) showAlert("LAST LAP", "#ff1744");
+                else if (remaining === 0) {
+                    showAlert("FINISHED", "#ff1744");
+                    finishSession();
+                }
+            }
+        }
+
+        function finishSession() {
+            if (!isRunning) return;
+            isRunning = false;
+            clearInterval(timerInterval);
+            releaseWakeLock();
+            saveCurrentSession();
+
+            screenTimer.style.display = 'none';
+            screenSummary.style.display = 'flex';
+            renderSummaryData();
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            window.isCountingDown = false;
+            clearInterval(timerInterval);
+            releaseWakeLock();
+
+            if (audioStartTimeout) clearTimeout(audioStartTimeout);
+            countdownTimeouts.forEach(t => clearTimeout(t));
+            countdownTimeouts = [];
+
+            screenSummary.style.display = 'none';
+            screenTimer.style.display = 'flex';
+            mainBtn.textContent = "START";
+            mainBtn.className = "action-btn btn-start";
+            
+            document.querySelector('.header-left').style.opacity = '1';
+            document.querySelector('.header-left').style.pointerEvents = 'auto';
+            tapArea.style.pointerEvents = 'auto';
+            mainBtn.style.pointerEvents = 'auto';
+            
+            updateAudioBtnState();
+            topResetBtn.style.display = 'none';
+            tapArea.className = "tap-area";
+            activeDisplayEl.style.display = 'none';
+            waitingTextEl.style.display = 'block';
+            waitingTextEl.innerHTML = "TAP ANYWHERE<br>TO START";
+            
+            totalTimerEl.textContent = "00:00.00";
+            runningLapTimerEl.textContent = "00:00.00";
+            lapCounterEl.textContent = "0";
+            lapInfoRow.style.display = 'none';
+            lapsRemainingEl.style.display = 'none';
+        }
+
+        // --- 輔助格式化函數 ---
+        function formatTime(ms) {
+            if (ms < 0) ms = 0;
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const hundredths = Math.floor((ms % 1000) / 10);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredths).padStart(2, '0')}`;
+        }
+
+        function formatCoachStyle(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const tenths = Math.floor((ms % 1000) / 100);
+            return `${seconds}.${tenths}`;
+        }
+
+        function getGearString() {
+            const front = gearFrontInput.value;
+            const rear = gearRearInput.value;
+            return (front && rear) ? `${front}x${rear}` : "";
+        }
+
+        function getTotalTimeDisplay() {
+            if (reportOptions.totalFromLastLap && laps.length > 0) {
+                return formatTime(laps[laps.length - 1].totalTime);
+            }
+            const finalTime = laps.length > 0 ? laps[laps.length - 1].totalTime : 0;
+            return formatTime(finalTime);
+        }
+
+        function updateLapsRemaining() {
+            const total = parseInt(totalLapsInput.value) || 0;
+            if (total > 0) {
+                const remaining = total - lapCount;
+                if (remaining >= 0) {
+                    lapsRemainingEl.textContent = `(${remaining})`;
+                    lapsRemainingEl.style.display = 'block';
+                } else {
+                    lapsRemainingEl.style.display = 'none';
+                }
+            } else {
+                lapsRemainingEl.style.display = 'none';
+            }
+        }
+
+        function showAlert(message, color) {
+            alertText.textContent = message;
+            alertText.style.color = color || '#fff';
+            alertText.style.borderColor = color || '#fff';
+            alertOverlay.style.display = 'block';
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => { alertOverlay.style.display = 'none'; }, 2500);
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        // --- 數據渲染與導出功能 ---
+        function renderSummaryData() {
+            finalTotalTimeEl.textContent = getTotalTimeDisplay();
+            const gear = getGearString();
+            const dist = distInput.value;
+            let metaText = "";
+            if (dist) metaText += `Distance: ${dist}m `;
+            if (gear) metaText += ` Gear: ${gear}`;
+            summaryGearInfo.textContent = metaText;
+
+            summaryBody.innerHTML = "";
+            laps.forEach(lap => {
+                const tr = document.createElement('tr');
+                let rowColorClass = "row-stable";
+                if (lap.status === "bg-faster") rowColorClass = "row-faster";
+                if (lap.status === "bg-slower") rowColorClass = "row-slower";
+
+                const diffSec = (lap.diff / 1000).toFixed(2);
+                const sign = lap.diff > 0 ? "+" : "";
+                const diffTxt = lap.lapNum === 1 ? "-" : `${sign}${diffSec}s`;
+
+                tr.innerHTML = `
+                    <td class="row-lap-num">${lap.lapNum}</td>
+                    <td class="${rowColorClass}">${(lap.splitTime / 1000).toFixed(3)}</td>
+                    <td>${formatTime(lap.totalTime)}</td>
+                    <td class="${rowColorClass}">${diffTxt}</td>
+                `;
+                summaryBody.appendChild(tr);
+            });
+        }
+
+        function saveCurrentSession() {
+            if (laps.length === 0) return;
+            const session = {
+                id: Date.now(),
+                date: sessionDate.toISOString(),
+                laps: [...laps],
+                gearF: gearFrontInput.value,
+                gearR: gearRearInput.value,
+                dist: distInput.value,
+                totalTimeRaw: laps.length > 0 ? laps[laps.length - 1].totalTime : 0
+            };
+            sessionHistory.unshift(session);
+            if (sessionHistory.length > 200) sessionHistory.pop();
+            localStorage.setItem('wtc_session_history', JSON.stringify(sessionHistory));
+        }
+
+        function renderHistoryList() {
+            historyListEl.innerHTML = "";
+            if (sessionHistory.length === 0) {
+                historyListEl.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>No history recorded</div>";
+                return;
+            }
+            sessionHistory.forEach(session => {
+                const d = new Date(session.date);
+                const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                const div = document.createElement('div');
+                div.className = "history-item";
+                
+                let gearTxt = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "";
+                let distTxt = session.dist ? `${session.dist}m` : "";
+                let metaParts = [];
+                if (distTxt) metaParts.push(distTxt);
+                if (gearTxt) metaParts.push(gearTxt);
+
+                div.innerHTML = `
+                    <div class="hist-info">
+                        <span class="hist-date">${dateStr}</span>
+                        <span class="hist-main">${formatTime(session.totalTimeRaw)}</span>
+                        <span class="hist-meta">${metaParts.join(' | ') || 'No Specs'} (${session.laps.length} Laps)</span>
+                    </div>
+                    <div style="font-size:1.2rem; color:#666;">❯</div>
+                `;
+                
+                div.addEventListener('click', () => {
+                    laps = [...session.laps];
+                    sessionDate = new Date(session.date);
+                    gearFrontInput.value = session.gearF || "";
+                    gearRearInput.value = session.gearR || "";
+                    distInput.value = session.dist || "";
+                    screenHistory.style.display = 'none';
+                    screenSummary.style.display = 'flex';
+                    renderSummaryData();
+                });
+                
+                historyListEl.appendChild(div);
+            });
+        }
+
+        function generateShareText() {
+            const d = sessionDate || new Date();
+            const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+            const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            let text = "";
+
+            if (reportOptions.whatsAppFormat) {
+                text += `🚴 *WTC Cycle Stats*\n`;
+                if (reportOptions.dist && distInput.value) text += `📏 ${distInput.value}m `;
+                if (reportOptions.gear && getGearString()) text += `⚙️ ${getGearString()}`;
+                text += `\n\n`;
+                if (reportOptions.date) text += `📅 ${dateStr} ${timeStr}\n`;
+                if (reportOptions.total) text += `⏱️ *Total: ${getTotalTimeDisplay()}*\n`;
+                if (reportOptions.laps) text += `🔄 Laps: ${laps.length}\n`;
+                
+                if (reportOptions.table && laps.length > 0) {
+                    text += `\n\`\`\`[Lap Table]\n`;
+                    laps.forEach(l => {
+                        text += `L${String(l.lapNum).padStart(2, '0')}: ${(l.splitTime / 1000).toFixed(3)}s\n`;
+                    });
+                    text += `\`\`\``;
+                }
+            } else {
+                text += `WTC Cycle Timer Report\n`;
+                text += `=====================\n`;
+                if (reportOptions.date) text += `Date: ${dateStr} ${timeStr}\n`;
+                if (reportOptions.total) text += `Total Time: ${getTotalTimeDisplay()}\n`;
+                if (reportOptions.laps) text += `Laps: ${laps.length}\n`;
+                if (reportOptions.gear && getGearString()) text += `Gear: ${getGearString()}\n`;
+                if (reportOptions.dist && distInput.value) text += `Distance: ${distInput.value}m\n`;
+                
+                if (reportOptions.table && laps.length > 0) {
+                    text += `\n--- Splits ---\n`;
+                    laps.forEach(l => {
+                        text += `Lap ${l.lapNum}: ${(l.splitTime / 1000).toFixed(3)}s\n`;
+                    });
+                }
+            }
+            return text;
+        }
+
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function exportCurrentToCSV() {
+            let csvContent = "\uFEFF"; // Byte Order Mark for Excel
+            csvContent += `WTC Cycle Session Report\n`;
+            const gear = getGearString();
+            if (gear) csvContent += `Gear,${gear}\n`;
+            if (distInput.value) csvContent += `Distance,${distInput.value}m\n`;
+            csvContent += `Total Time,${getTotalTimeDisplay()}\n\n`;
+            csvContent += "Lap,Total Time,Split Time,Diff\n";
+            
+            laps.forEach(lap => {
+                const total = formatTime(lap.totalTime);
+                const split = (lap.splitTime / 1000).toFixed(3);
+                const diff = (lap.diff / 1000).toFixed(2);
+                csvContent += `${lap.lapNum},${total},${split},${diff}\n`;
+            });
+            downloadCSV(csvContent, `cycle_timer_${Date.now()}.csv`);
+        }
+
+        function exportAllHistoryToCSV() {
+            if (sessionHistory.length === 0) {
+                alert("No history to download.");
+                return;
+            }
+            let csvContent = "\uFEFF";
+            sessionHistory.forEach((session, index) => {
+                const d = new Date(session.date);
+                const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                const gear = (session.gearF && session.gearR) ? `${session.gearF}x${session.gearR}` : "N/A";
+                const dist = session.dist ? session.dist + "m" : "N/A";
+                
+                csvContent += `SESSION ${index + 1}\n`;
+                csvContent += `Date,${dateStr}\n`;
+                csvContent += `Time,${timeStr}\n`;
+                csvContent += `Gear,${gear}\n`;
+                csvContent += `Dist,${dist}\n`;
+                csvContent += `Total,${formatTime(session.totalTimeRaw)}\n`;
+                csvContent += `Lap,Split,Total,Diff\n`;
+                
+                session.laps.forEach(lap => {
+                    const split = (lap.splitTime / 1000).toFixed(3);
+                    const total = formatTime(lap.totalTime);
+                    const diff = (lap.diff / 1000).toFixed(2);
+                    csvContent += `${lap.lapNum},${split},${total},${diff}\n`;
+                });
+                csvContent += `\n\n`;
+            });
+            downloadCSV(csvContent, `WTC_Full_History_${Date.now()}.csv`);
+        }
+
+        function clearAllHistory() {
+            if (confirm("⚠️ 確定要刪除所有歷史紀錄嗎？此動作無法還原。")) {
+                sessionHistory = [];
+                localStorage.removeItem('wtc_session_history');
+                historyListEl.innerHTML = "<div style='color:#666; text-align:center; padding:20px;'>No history recorded</div>";
+                showToast("歷史紀錄已清空");
+            }
+        }
+
+        // --- 事件綁定監聽處理器 ---
+        function handleTap(e) {
+            if (e.target && (
+                e.target.closest('.floating-action-container') || 
+                e.target.closest('.header') || 
+                e.target.closest('.summary-header-bar') || 
+                e.target.closest('.report-options-menu') || 
+                e.target.closest('.screen-history') || 
+                e.target.tagName === 'INPUT' || 
+                e.target.id === 'topResetBtn'
+            )) return;
+
+            if (!isRunning) {
+                if (e.type === 'touchstart') e.preventDefault();
+                triggerStart();
+            } else {
+                if (e.type === 'touchstart') e.preventDefault();
+                lap();
+            }
+        }
+
+        // 綁定主點擊區域（相容觸控與點擊）
+        tapArea.addEventListener('touchstart', handleTap, { passive: false });
+        tapArea.addEventListener('mousedown', handleTap);
+
+        mainBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isRunning) triggerStart();
+            else finishSession();
+        });
+
+        // 鍵盤空白鍵相容性優化
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' || event.key === ' ') {
+                event.preventDefault();
+                const fakeEvent = { target: document.body, type: 'keydown', preventDefault: function() {} };
+                handleTap(fakeEvent);
+            }
+        });
+
+        topResetBtn.addEventListener('click', resetTimer);
+        nextSessionBtn.addEventListener('click', resetTimer);
+
+        audioBtn.addEventListener('click', () => {
+            optAudioToggle.checked = !optAudioToggle.checked;
+            saveSettings();
+        });
+
+        historyBtn.addEventListener('click', () => {
+            renderHistoryList();
+            screenHistory.style.display = 'flex';
+        });
+
+        closeHistoryBtn.addEventListener('click', () => {
+            screenHistory.style.display = 'none';
+        });
+
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            reportMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (reportMenu.classList.contains('show') && !e.target.closest('.report-options-menu') && e.target !== settingsBtn) {
+                reportMenu.classList.remove('show');
+            }
+        });
+
+        csvBtn.addEventListener('click', exportCurrentToCSV);
+        dlAllCsvBtn.addEventListener('click', exportAllHistoryToCSV);
+        clearAllBtn.addEventListener('click', clearAllHistory);
+
+        shareBtn.addEventListener('click', async () => {
+            const shareText = generateShareText();
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text: shareText });
+                } catch (err) { console.log(err); }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                    showToast("📋 已複製報告到剪貼簿！");
+                } catch (err) {
+                    alert("無法複製到剪貼簿。");
+                }
+            }
+        });
+
+        // 全螢幕切換功能
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        alert("iPhone Safari 不支援直接全螢幕。請使用「加入主畫面 (Add to Home Screen)」完美運行。");
+                    });
+                }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        [optDate, optStartTime, optTotal, optGear, optDist, optLaps, optTable, optAudioToggle, optTotalMode, optWhatsApp].forEach(el => {
+            el.addEventListener('change', saveSettings);
+        });
+
+        // 頁面初次初始化載入
+        window.addEventListener('DOMContentLoaded', loadSettings);
+    </script>
+</body>
+</html>
