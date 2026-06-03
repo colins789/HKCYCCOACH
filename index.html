@@ -34,12 +34,23 @@
         
         <div class="flex flex-col sm:flex-row items-stretch gap-3 bg-gray-900 p-3 rounded-2xl border border-gray-800 shadow-2xl w-full md:w-auto">
             
-            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[170px] flex-grow sm:flex-grow-0">
-                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 pl-1">📅 選擇日期</span>
-                <input type="date" id="schedule-date" onchange="onDateChange()" class="bg-transparent border-0 font-mono font-black text-lg md:text-xl text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-9">
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[95px] flex-grow sm:flex-grow-0">
+                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 pl-1">📆 年份</span>
+                <select id="schedule-year-select" onchange="onYearDropdownChange()" class="bg-transparent border-0 font-mono font-black text-lg md:text-xl text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-9 bg-gray-950 rounded-lg">
+                    <option value="2024" class="bg-gray-950 text-white">2024</option>
+                    <option value="2025" class="bg-gray-950 text-white">2025</option>
+                    <option value="2026" class="bg-gray-950 text-white">2026</option>
+                    <option value="2027" class="bg-gray-950 text-white">2027</option>
+                    <option value="2028" class="bg-gray-950 text-white">2028</option>
+                </select>
             </div>
 
-            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[130px] justify-center items-center">
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[150px] flex-grow sm:flex-grow-0">
+                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 pl-1">📅 選擇日期</span>
+                <input type="date" id="schedule-date" onchange="onDateInputChange()" class="bg-transparent border-0 font-mono font-black text-lg md:text-xl text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-9">
+            </div>
+
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[110px] justify-center items-center">
                 <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center w-full">🗓️ 星期</span>
                 <div id="header-weekday-display" class="font-black text-lg md:text-xl text-amber-400 h-9 flex items-center justify-center tracking-wide">---</div>
             </div>
@@ -74,7 +85,7 @@
             </div>
         </div>
 
-        <div class="md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div class="md:col-span-1 lg:col-span-2 xl:col-span-3 grid grid-cols-1 lg:col-span-2 gap-4 sm:gap-6">
             <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col overflow-hidden">
                 <h2 class="text-xs sm:text-sm font-bold mb-3 sm:mb-4 text-cyan-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2 shrink-0">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
@@ -169,8 +180,12 @@
         }
 
         const dateInput = document.getElementById('schedule-date');
+        const yearSelect = document.getElementById('schedule-year-select');
         const weekdayDisplay = document.getElementById('header-weekday-display');
         const today = new Date();
+        
+        // Initialize values to current local date
+        yearSelect.value = today.getFullYear();
         dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
         const SPREADSHEET_BASE = 'https://docs.google.com/spreadsheets/d/1PcTlsCTDaTchMICMx8IQ_AgwHZszINgqxysK_ssWc2k/export?format=csv';
@@ -194,20 +209,48 @@
         initMonthOptions();
         
         function getSelectedYear() {
-            if (dateInput && dateInput.value) return dateInput.value.split('-')[0];
-            return String(new Date().getFullYear());
+            return yearSelect.value || String(new Date().getFullYear());
         }
 
-        function onDateChange() { fetchSchedule(); }
+        // Triggered when user picks a year from the explicit Year Dropdown selector
+        function onYearDropdownChange() {
+            const chosenYear = yearSelect.value;
+            const currentInputValue = dateInput.value;
+            if (currentInputValue) {
+                const parts = currentInputValue.split('-');
+                if (parts.length === 3) {
+                    // Inject the new year choice back into the layout input control
+                    dateInput.value = `${chosenYear}-${parts[1]}-${parts[2]}`;
+                }
+            }
+            fetchSchedule();
+        }
+
+        // Triggered when user selects a complete date via standard input picker
+        function onDateInputChange() {
+            if (dateInput.value) {
+                const parts = dateInput.value.split('-');
+                if (parts.length === 3) {
+                    // Sync the Year Dropdown block to show the selected year context
+                    yearSelect.value = parts[0];
+                }
+            }
+            fetchSchedule();
+        }
         
         function syncAndViewDate(isoDateStr) {
             dateInput.value = isoDateStr;
+            const parts = isoDateStr.split('-');
+            if(parts.length === 3) {
+                yearSelect.value = parts[0];
+            }
             fetchSchedule();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function resetToToday() {
             const t = new Date();
+            yearSelect.value = t.getFullYear();
             dateInput.value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
             fetchSchedule();
         }
@@ -251,6 +294,7 @@
             const coachDropdown = document.getElementById('coach-dropdown-select');
             const resultBox = document.getElementById('coach-search-results');
             const selectedMonth = parseInt(monthSelect.value, 10);
+            const selectedYearStr = getSelectedYear();
             
             if (action === 'init') {
                 resultBox.innerHTML = '<p class="text-gray-500 italic text-center py-6 col-span-full">請選擇教練姓名...</p>';
@@ -264,7 +308,7 @@
                     if (!dateStr || dateStr.includes('Date') || dateStr.includes('日期')) continue;
                     
                     const cellDateObj = parseCellToDateObj(dateStr);
-                    if (cellDateObj && (cellDateObj.getMonth() + 1) === selectedMonth) {
+                    if (cellDateObj && (cellDateObj.getMonth() + 1) === selectedMonth && String(cellDateObj.getFullYear()) === selectedYearStr) {
                         [2, 3, 5, 6, 8, 9].forEach(idx => {
                             if (row[idx]) {
                                String(row[idx]).split(/[\s,/\、，]+/).forEach(name => {
@@ -291,7 +335,7 @@
                     });
                 } else {
                     coachDropdown.disabled = true;
-                    coachDropdown.innerHTML = '<option value="">-- 該月份無排班數據 --</option>';
+                    coachDropdown.innerHTML = `<option value="">-- ${selectedYearStr}年${selectedMonth}月無排班數據 --</option>`;
                 }
             }
             
@@ -311,7 +355,7 @@
                     if (!dateStr || dateStr.includes('Date') || dateStr.includes('日期')) continue;
                     
                     const cellDateObj = parseCellToDateObj(dateStr);
-                    if (cellDateObj && (cellDateObj.getMonth() + 1) === selectedMonth) {
+                    if (cellDateObj && (cellDateObj.getMonth() + 1) === selectedMonth && String(cellDateObj.getFullYear()) === selectedYearStr) {
                         const youthBlock = ((row[2]||'') + (row[3]||'')).toLowerCase();
                         const starsBlock = ((row[5]||'') + (row[6]||'') + (row[8]||'') + (row[9]||'')).toLowerCase();
 
@@ -347,7 +391,7 @@
                         </div>
                     `).join('');
                 } else {
-                    resultBox.innerHTML = `<p class="text-gray-500 italic text-center py-8 col-span-full">🏖️ 該教練在 ${selectedMonth} 月份無排班紀錄。</p>`;
+                    resultBox.innerHTML = `<p class="text-gray-500 italic text-center py-8 col-span-full">🏖️ 該教練在 ${selectedYearStr}年${selectedMonth} 月份無排班紀錄。</p>`;
                 }
             }
         }
