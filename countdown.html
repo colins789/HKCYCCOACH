@@ -27,7 +27,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
         .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.1em; font-weight: 900; }
-        .zone-badge { font-weight: 900; letter-spacing: 0.1em; }
         input[type="number"], textarea, input[type="text"] { font-size: 16px !important; }
         
         /* Fullscreen styles */
@@ -85,16 +84,14 @@
             line-height: 1;
         }
         
-        body.fullscreen-mode .zone-badge {
-            font-size: clamp(20px, 5vw, 5vh) !important;
+        body.fullscreen-mode .phase-display {
+            font-size: clamp(40px, 15vw, 15vh) !important;
+            line-height: 1.2;
+            font-weight: 900;
         }
         
         body.fullscreen-mode .round-display {
             font-size: clamp(16px, 3vw, 3vh) !important;
-        }
-        
-        body.fullscreen-mode .details-display {
-            font-size: clamp(12px, 2vw, 2vh) !important;
         }
         
         body.fullscreen-mode .exit-fullscreen-btn { 
@@ -157,11 +154,6 @@
                         <input type="number" id="training-rounds" value="1" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone</label>
-                    <input type="text" id="training-zone-input" placeholder="e.g., Zone 4" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500">
-                </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-400 mb-1">Training Details</label>
@@ -173,13 +165,11 @@
             <div class="timer-container main-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
                 <div class="text-center w-full">
-                    <div id="training-phase-display" class="text-sm font-bold text-gray-400 mb-2">Ready</div>
                     <div class="timer-display countdown-display text-red-400 mb-4" id="training-display">05:00</div>
-                    <div id="training-zone-display" class="zone-badge text-base mb-3 px-4 py-2 rounded-lg bg-gray-800 text-gray-300 min-h-[2.5rem] flex items-center justify-center">Training Zone</div>
+                    <div id="training-details-display" class="text-sm text-gray-300 italic mt-2 phase-display"></div>
                     <div class="text-lg font-bold text-gray-300 mb-2 round-display">
                         Round: <span id="training-round-display" class="text-red-400">1</span>/<span id="training-total-rounds">1</span>
                     </div>
-                    <div id="training-details-display" class="text-sm text-gray-400 italic mt-2 details-display"></div>
                 </div>
             </div>
 
@@ -214,24 +204,20 @@
                         <input type="number" id="interval-recovery-time" value="30" min="1" max="600" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="grid grid-cols-1 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 mb-1">Rounds</label>
                         <input type="number" id="interval-rounds" value="5" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone</label>
-                        <input type="text" id="interval-zone-input" placeholder="e.g., Zone 5" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
-                    </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="block text-xs font-bold text-gray-400 mb-1">Work Phase Details</label>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Work Phrase</label>
                     <textarea id="interval-work-details" placeholder="e.g., High intensity sprint..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-emerald-500 h-16 resize-none"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-1">Recovery Phase Details</label>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Recovery Phrase</label>
                     <textarea id="interval-recovery-details" placeholder="e.g., Easy pace, catch breath..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-emerald-500 h-16 resize-none"></textarea>
                 </div>
             </div>
@@ -240,13 +226,11 @@
             <div class="timer-container main-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
                 <div class="text-center w-full">
-                    <div id="interval-phase-display" class="text-sm font-bold text-gray-400 mb-2">Work</div>
                     <div class="timer-display countdown-display text-emerald-400 mb-4" id="interval-display">00:30</div>
-                    <div id="interval-zone-display" class="zone-badge text-base mb-3 px-4 py-2 rounded-lg bg-gray-800 text-gray-300 min-h-[2.5rem] flex items-center justify-center">Training Zone</div>
+                    <div id="interval-details-display" class="text-sm text-gray-300 italic mt-2 phase-display"></div>
                     <div class="text-lg font-bold text-gray-300 mb-2 round-display">
                         Round: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
                     </div>
-                    <div id="interval-details-display" class="text-sm text-gray-400 italic mt-2 details-display"></div>
                 </div>
             </div>
 
@@ -345,7 +329,6 @@
                     if (trainingCountdownValue > 0) {
                         playTrackBeep(false);
                         document.getElementById('training-display').textContent = trainingCountdownValue;
-                        document.getElementById('training-phase-display').textContent = 'Get Ready...';
                         trainingCountdownValue--;
                     } else {
                         playTrackBeep(true);
@@ -396,21 +379,17 @@
         function updateTrainingDisplay() {
             if (trainingCountdownPhase && trainingCountdownValue > 0) {
                 document.getElementById('training-display').textContent = trainingCountdownValue;
-                document.getElementById('training-phase-display').textContent = 'Get Ready...';
             } else if (trainingCountdownValue === 0) {
                 document.getElementById('training-display').textContent = 'GO!';
-                document.getElementById('training-phase-display').textContent = 'Training';
             } else {
                 const mins = Math.floor(trainingRemaining / 60);
                 const secs = trainingRemaining % 60;
                 document.getElementById('training-display').textContent = 
                     `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                document.getElementById('training-phase-display').textContent = 'Training';
             }
             
             document.getElementById('training-round-display').textContent = trainingCurrentRound;
             document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
-            document.getElementById('training-zone-display').textContent = document.getElementById('training-zone-input').value || 'Training Zone';
             document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
         }
 
@@ -447,7 +426,6 @@
                     if (intervalStartCountdown > 0) {
                         playTrackBeep(false);
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
-                        document.getElementById('interval-phase-display').textContent = 'Get Ready...';
                         intervalStartCountdown--;
                     } else {
                         playTrackBeep(true);
@@ -506,19 +484,13 @@
             document.getElementById('interval-display').textContent = 
                 `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             
-            const phaseText = intervalIsWorkPhase ? 'WORK' : 'RECOVERY';
-            const phaseColor = intervalIsWorkPhase ? 'text-emerald-400' : 'text-blue-400';
-            document.getElementById('interval-phase-display').textContent = phaseText;
-            document.getElementById('interval-phase-display').className = `text-sm font-bold ${phaseColor} mb-2`;
-            
-            document.getElementById('interval-round-display').textContent = intervalCurrentRound;
-            document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
-            document.getElementById('interval-zone-display').textContent = document.getElementById('interval-zone-input').value || 'Training Zone';
-            
             const details = intervalIsWorkPhase ? 
                 document.getElementById('interval-work-details').value : 
                 document.getElementById('interval-recovery-details').value;
             document.getElementById('interval-details-display').textContent = details;
+            
+            document.getElementById('interval-round-display').textContent = intervalCurrentRound;
+            document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
         }
 
         // ===== TAB SWITCHING =====
