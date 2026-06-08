@@ -422,6 +422,7 @@
         let countdownRemaining = 0, countdownCurrentRound = 1, countdownTotalRounds = 1;
         let countdownCountdownPhase = false, countdownCountdownValue = 5;
         let countdownExpectedEndTime = null; // Time Anchor
+        let lastPlayedCountdownSec = -1; // Audio track duplicate sound block lock
 
         function getCountdownSetupTime() {
             return (parseInt(document.getElementById('countdown-minutes').value) || 0) * 60 + (parseInt(document.getElementById('countdown-seconds').value) || 0);
@@ -436,11 +437,11 @@
                 countdownRemaining = getCountdownSetupTime();
                 countdownTotalRounds = parseInt(document.getElementById('countdown-rounds').value) || 1;
                 countdownCurrentRound = 1; countdownCountdownPhase = true; countdownCountdownValue = 5;
+                lastPlayedCountdownSec = -1;
                 requestFullscreen(document.body);
             }
             
             countdownRunning = true;
-            // Record the precise millisecond value when this block should end
             calculateNextCountdownAnchor();
 
             countdownInterval = setInterval(() => {
@@ -451,7 +452,10 @@
                     countdownCountdownValue = diffSeconds;
                     
                     if (countdownCountdownValue > 0) {
-                        if (countdownCountdownValue <= 5) playTrackBeep(false);
+                        if (countdownCountdownValue <= 5 && countdownCountdownValue !== lastPlayedCountdownSec) {
+                            playTrackBeep(false);
+                            lastPlayedCountdownSec = countdownCountdownValue;
+                        }
                         document.getElementById('countdown-display').textContent = countdownCountdownValue;
                         document.getElementById('countdown-details-display').textContent = 'Get Ready...';
                         setWidgetTheme('countdown', 'prep', 'PREPARATION');
@@ -460,6 +464,7 @@
                         playTrackBeep(true); 
                         countdownCountdownPhase = false; 
                         countdownCountdownValue = -1;
+                        lastPlayedCountdownSec = -1;
                         countdownRemaining = getCountdownSetupTime();
                         calculateNextCountdownAnchor();
                         updateCountdownDisplay();
@@ -477,6 +482,7 @@
                             countdownCurrentRound++; 
                             countdownCountdownPhase = true; 
                             countdownCountdownValue = 5;
+                            lastPlayedCountdownSec = -1;
                             calculateNextCountdownAnchor();
                         } else {
                             clearInterval(countdownInterval); 
@@ -487,7 +493,7 @@
                         }
                     }
                 }
-            }, 250); // High sample rate checking prevents skipping background time frames
+            }, 250); 
         }
 
         function calculateNextCountdownAnchor() {
@@ -506,6 +512,7 @@
             countdownRunning = false; clearInterval(countdownInterval);
             disableBackgroundWakeLock();
             countdownRemaining = 0; countdownCurrentRound = 1; countdownCountdownPhase = false; countdownCountdownValue = 5;
+            lastPlayedCountdownSec = -1;
             updateCountdownDisplay(); exitFullscreen();
             clearSystemStatusBar();
         }
@@ -544,6 +551,7 @@
         let intervalIsWorkPhase = true, intervalWorkTime = 30, intervalRecoveryTime = 30;
         let intervalStartCountdown = 5, intervalInStartPhase = false;
         let intervalExpectedEndTime = null; // Time Anchor
+        let lastPlayedIntervalSec = -1; // Audio track duplicate sound block lock
 
         function startInterval() {
             if (intervalRunning) return;
@@ -556,7 +564,9 @@
                 intervalTotalRounds = parseInt(document.getElementById('interval-rounds').value) || 1;
                 intervalCurrentRound = 1; intervalIsWorkPhase = true;
                 intervalRemaining = intervalWorkTime; intervalStartCountdown = 5;
-                intervalInStartPhase = true; requestFullscreen(document.body);
+                intervalInStartPhase = true; 
+                lastPlayedIntervalSec = -1;
+                requestFullscreen(document.body);
             }
             
             intervalRunning = true;
@@ -570,7 +580,10 @@
                     intervalStartCountdown = diffSeconds;
 
                     if (intervalStartCountdown > 0) {
-                        if (intervalStartCountdown <= 5) playTrackBeep(false);
+                        if (intervalStartCountdown <= 5 && intervalStartCountdown !== lastPlayedIntervalSec) {
+                            playTrackBeep(false);
+                            lastPlayedIntervalSec = intervalStartCountdown;
+                        }
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
                         setWidgetTheme('interval', 'prep', 'PREPARATION');
@@ -579,6 +592,7 @@
                         playTrackBeep(true); 
                         intervalInStartPhase = false;
                         intervalRemaining = intervalWorkTime;
+                        lastPlayedIntervalSec = -1;
                         calculateNextIntervalAnchor();
                         updateIntervalDisplay();
                     }
@@ -588,9 +602,14 @@
 
                     if (intervalRemaining > 0) {
                         updateIntervalDisplay();
-                        if (!intervalIsWorkPhase && intervalRemaining <= 5) playTrackBeep(false);
+                        // 5,4,3,2,1 cadence audio update fix matching tracking rule
+                        if (intervalRemaining <= 5 && intervalRemaining !== lastPlayedIntervalSec) {
+                            playTrackBeep(false);
+                            lastPlayedIntervalSec = intervalRemaining;
+                        }
                     } else {
                         playTrackBeep(true);
+                        lastPlayedIntervalSec = -1;
                         if (intervalIsWorkPhase) {
                             intervalIsWorkPhase = false; 
                             intervalRemaining = intervalRecoveryTime;
@@ -630,6 +649,7 @@
             intervalRunning = false; clearInterval(intervalTimer);
             disableBackgroundWakeLock();
             intervalRemaining = 0; intervalCurrentRound = 1; intervalIsWorkPhase = true; intervalInStartPhase = false;
+            lastPlayedIntervalSec = -1;
             updateIntervalDisplay(); exitFullscreen();
             clearSystemStatusBar();
         }
@@ -645,13 +665,15 @@
                 return;
             }
 
-            const currentFormattedTime = formatTimeText(intervalRemaining);
-            document.getElementById('interval-display').textContent = currentFormattedTime;
-            document.getElementById('interval-details-display').textContent = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
-            
             if (intervalInStartPhase) {
+                document.getElementById('interval-display').textContent = intervalStartCountdown;
+                document.getElementById('interval-details-display').textContent = 'Get Ready...';
                 setWidgetTheme('interval', 'prep', 'PREPARATION');
             } else {
+                const currentFormattedTime = formatTimeText(intervalRemaining);
+                document.getElementById('interval-display').textContent = currentFormattedTime;
+                document.getElementById('interval-details-display').textContent = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
+                
                 const activeStateText = intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE';
                 setWidgetTheme('interval', intervalIsWorkPhase ? 'work' : 'recovery', activeStateText);
                 
