@@ -206,12 +206,20 @@
                 </div>
             </div>
 
-            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
-                <div class="text-center w-full">
-                    <div class="timer-display countdown-display text-red-400 mb-4" id="training-display">05:00</div>
+                
+                <div class="text-center w-full pt-2">
+                    <span id="training-label-display" class="text-xs uppercase tracking-widest font-black text-red-500 bg-red-950/50 px-3 py-1 rounded-full border border-red-900/40">TRAINING</span>
+                </div>
+
+                <div class="text-center w-full my-auto flex flex-col justify-center items-center">
+                    <div class="timer-display countdown-display text-red-400" id="training-display">05:00</div>
                     <div id="training-details-display" class="text-sm text-gray-300 italic mt-2 phase-display"></div>
-                    <div class="text-lg font-bold text-gray-300 mb-2 round-display">
+                </div>
+
+                <div class="text-center w-full pb-2">
+                    <div class="text-base font-bold text-gray-300 round-display">
                         Round: <span id="training-round-display" class="text-red-400">1</span>/<span id="training-total-rounds">1</span>
                     </div>
                 </div>
@@ -253,12 +261,22 @@
                 </div>
             </div>
 
-            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
-                <div class="timer-display countdown-display text-emerald-400" id="interval-display">00:30</div>
-                <div id="interval-details-display" class="phase-display text-emerald-200"></div>
-                <div class="text-lg font-bold text-gray-300 round-display">
-                    Round: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
+                
+                <div class="text-center w-full pt-2">
+                    <span id="interval-label-display" class="text-xs uppercase tracking-widest font-black text-emerald-400 bg-emerald-950/50 px-3 py-1 rounded-full border border-emerald-900/40">WORK PHASE</span>
+                </div>
+
+                <div class="text-center w-full my-auto flex flex-col justify-center items-center">
+                    <div class="timer-display countdown-display text-emerald-400" id="interval-display">00:30</div>
+                    <div id="interval-details-display" class="phase-display text-emerald-200"></div>
+                </div>
+
+                <div class="text-center w-full pb-2">
+                    <div class="text-lg font-bold text-gray-300 round-display">
+                        Round: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
+                    </div>
                 </div>
             </div>
 
@@ -334,12 +352,16 @@
         let trainingCurrentRound = 1, trainingTotalRounds = 1;
         let trainingCountdownPhase = false, trainingCountdownValue = 5;
 
+        function getTrainingSetupTime() {
+            const mins = parseInt(document.getElementById('training-minutes').value) || 0;
+            const secs = parseInt(document.getElementById('training-seconds').value) || 0;
+            return mins * 60 + secs;
+        }
+
         function startTraining() {
             if (trainingRunning) return;
             if (trainingRemaining === 0) {
-                const mins = parseInt(document.getElementById('training-minutes').value) || 0;
-                const secs = parseInt(document.getElementById('training-seconds').value) || 0;
-                trainingRemaining = mins * 60 + secs;
+                trainingRemaining = getTrainingSetupTime();
                 trainingTotalRounds = parseInt(document.getElementById('training-rounds').value) || 1;
                 trainingCurrentRound = 1;
                 trainingCountdownPhase = true;
@@ -354,6 +376,7 @@
                         playTrackBeep(false);
                         document.getElementById('training-display').textContent = trainingCountdownValue;
                         document.getElementById('training-details-display').textContent = 'Get Ready...';
+                        document.getElementById('training-label-display').textContent = 'PREPARATION';
                         trainingCountdownValue--;
                     } else {
                         playTrackBeep(true);
@@ -371,6 +394,7 @@
                             trainingCurrentRound++;
                             trainingCountdownPhase = true;
                             trainingCountdownValue = 5;
+                            trainingRemaining = getTrainingSetupTime();
                         } else {
                             clearInterval(trainingInterval);
                             trainingRunning = false;
@@ -390,16 +414,31 @@
         }
 
         function updateTrainingDisplay() {
+            if (!trainingRunning && trainingRemaining === 0) {
+                const totalSecs = getTrainingSetupTime();
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                document.getElementById('training-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
+                document.getElementById('training-round-display').textContent = '1';
+                document.getElementById('training-total-rounds').textContent = parseInt(document.getElementById('training-rounds').value) || 1;
+                document.getElementById('training-label-display').textContent = 'TRAINING';
+                return;
+            }
+
             if (trainingCountdownPhase && trainingCountdownValue > 0) {
                 document.getElementById('training-display').textContent = trainingCountdownValue;
                 document.getElementById('training-details-display').textContent = 'Get Ready...';
+                document.getElementById('training-label-display').textContent = 'PREPARATION';
             } else if (trainingCountdownValue === 0) {
                 document.getElementById('training-display').textContent = 'GO!';
                 document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
+                document.getElementById('training-label-display').textContent = 'TRAINING';
             } else {
                 const mins = Math.floor(trainingRemaining / 60), secs = trainingRemaining % 60;
                 document.getElementById('training-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
                 document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
+                document.getElementById('training-label-display').textContent = 'TRAINING';
             }
             document.getElementById('training-round-display').textContent = trainingCurrentRound;
             document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
@@ -429,6 +468,7 @@
                         playTrackBeep(false);
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
+                        document.getElementById('interval-label-display').textContent = 'PREPARATION';
                         intervalStartCountdown--;
                     } else {
                         playTrackBeep(true);
@@ -469,10 +509,29 @@
         }
 
         function updateIntervalDisplay() {
+            if (!intervalRunning && intervalRemaining === 0) {
+                const setupWork = parseInt(document.getElementById('interval-work-time').value) || 0;
+                const mins = Math.floor(setupWork / 60), secs = setupWork % 60;
+                document.getElementById('interval-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('interval-details-display').textContent = document.getElementById('interval-work-details').value;
+                document.getElementById('interval-round-display').textContent = '1';
+                document.getElementById('interval-total-rounds').textContent = parseInt(document.getElementById('interval-rounds').value) || 5;
+                document.getElementById('interval-label-display').textContent = 'WORK PHASE';
+                return;
+            }
+
             const mins = Math.floor(intervalRemaining / 60), secs = intervalRemaining % 60;
             document.getElementById('interval-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             const details = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
             document.getElementById('interval-details-display').textContent = details;
+            
+            // Dynamic top label update based on running sub-phase
+            if (intervalInStartPhase) {
+                document.getElementById('interval-label-display').textContent = 'PREPARATION';
+            } else {
+                document.getElementById('interval-label-display').textContent = intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE';
+            }
+            
             document.getElementById('interval-round-display').textContent = intervalCurrentRound;
             document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
         }
@@ -490,6 +549,20 @@
             if (tabName === 'training') { activeBtn.classList.add('bg-red-600', 'hover:bg-red-500'); } 
             else { activeBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500'); }
         }
+
+        // ===== INSTANT UPDATE EVENT LISTENERS =====
+        document.getElementById('training-minutes').addEventListener('input', updateTrainingDisplay);
+        document.getElementById('training-seconds').addEventListener('input', updateTrainingDisplay);
+        document.getElementById('training-rounds').addEventListener('input', updateTrainingDisplay);
+        document.getElementById('training-details').addEventListener('input', updateTrainingDisplay);
+
+        document.getElementById('interval-work-time').addEventListener('input', updateIntervalDisplay);
+        document.getElementById('interval-recovery-time').addEventListener('input', updateIntervalDisplay);
+        document.getElementById('interval-rounds').addEventListener('input', updateIntervalDisplay);
+        document.getElementById('interval-work-details').addEventListener('input', updateIntervalDisplay);
+        document.getElementById('interval-recovery-details').addEventListener('input', () => {
+            if (!intervalRunning && intervalRemaining === 0) updateIntervalDisplay();
+        });
 
         // Initialize display baselines on boot
         updateTrainingDisplay();
