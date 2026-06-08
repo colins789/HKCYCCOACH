@@ -290,6 +290,66 @@
     </div>
 
     <script>
+        // --- Service Worker Live Notification Integration ---
+        let swRegistration = null;
+
+        // Register a system-level notification service worker using an inline Blob URL
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+            const swCode = `
+                self.addEventListener('message', (event) => {
+                    if (event.data.action === 'updateNotification') {
+                        const { title, body, silent } = event.data;
+                        self.registration.showNotification(title, {
+                            body: body,
+                            tag: 'live-timer-sync', // Overwrites previous step notification smoothly
+                            renotify: false,        // Prevents phone from vibrating/buzzing every single second
+                            silent: silent,         // Quiet tracking mode
+                            icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>'
+                        });
+                    } else if (event.data.action === 'clearNotification') {
+                        self.registration.getNotifications({ tag: 'live-timer-sync' }).then((notifications) => {
+                            notifications.forEach(n => n.close());
+                        });
+                    }
+                });
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swUrl).then(reg => {
+                swRegistration = reg;
+                console.log('Notification Service Worker Active');
+            }).catch(err => console.error('Service Worker Registry Failed', err));
+        }
+
+        // Send a message to the Service Worker engine to update or dismiss the native system overlay
+        function updateSystemStatusBar(title, body, silent = true) {
+            if (swRegistration && Notification.permission === 'granted') {
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ action: 'updateNotification', title, body, silent });
+                } else {
+                    swRegistration.active?.postMessage({ action: 'updateNotification', title, body, silent });
+                }
+            }
+        }
+
+        function clearSystemStatusBar() {
+            if (swRegistration) {
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ action: 'clearNotification' });
+                } else {
+                    swRegistration.active?.postMessage({ action: 'clearNotification' });
+                }
+            }
+        }
+
+        function requestNotificationAccess() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+        // ---------------------------------------------------
+
         function getAudioCtx() {
             if (!window.sharedAudioCtx) window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (window.sharedAudioCtx.state === 'suspended') window.sharedAudioCtx.resume();
@@ -333,8 +393,13 @@
             return (parseInt(document.getElementById('countdown-minutes').value) || 0) * 60 + (parseInt(document.getElementById('countdown-seconds').value) || 0);
         }
 
+        function formatTimeText(totalSecs) {
+            return `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
+        }
+
         function startCountdownTimer() {
             if (countdownRunning) return;
+            requestNotificationAccess(); // Ensure permission hook is triggered
             if (countdownRemaining === 0) {
                 countdownRemaining = getCountdownSetupTime();
                 countdownTotalRounds = parseInt(document.getElementById('countdown-rounds').value) || 1;
@@ -349,8 +414,8 @@
                         document.getElementById('countdown-display').textContent = countdownCountdownValue;
                         document.getElementById('countdown-details-display').textContent = 'Get Ready...';
                         
-                        // Switch Theme to Prep (Amber)
                         setWidgetTheme('countdown', 'prep', 'PREPARATION');
+                        updateSystemStatusBar(`Get Ready! (${countdownCountdownValue}s)`, `Round ${countdownCurrentRound}/${countdownTotalRounds}`);
                         countdownCountdownValue--;
                     } else {
                         playTrackBeep(true); countdownCountdownPhase = false; countdownCountdownValue = -1;
@@ -367,23 +432,30 @@
                             countdownRemaining = getCountdownSetupTime();
                         } else {
                             clearInterval(countdownInterval); countdownRunning = false; exitFullscreen();
+                            updateSystemStatusBar("Timer Finished!", "All rounds completed.", false);
                         }
                     }
                 }
             }, 1000);
         }
 
-        function pauseCountdownTimer() { countdownRunning = false; clearInterval(countdownInterval); }
+        function pauseCountdownTimer() { 
+            countdownRunning = false; 
+            clearInterval(countdownInterval); 
+            updateSystemStatusBar("Timer Paused", formatTimeText(countdownRemaining));
+        }
+        
         function resetCountdownTimer() {
             countdownRunning = false; clearInterval(countdownInterval);
             countdownRemaining = 0; countdownCurrentRound = 1; countdownCountdownPhase = false; countdownCountdownValue = 5;
             updateCountdownDisplay(); exitFullscreen();
+            clearSystemStatusBar();
         }
 
         function updateCountdownDisplay() {
             if (!countdownRunning && countdownRemaining === 0) {
                 const totalSecs = getCountdownSetupTime();
-                document.getElementById('countdown-display').textContent = `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
+                document.getElementById('countdown-display').textContent = formatTimeText(totalSecs);
                 document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
                 document.getElementById('countdown-round-display').textContent = '1';
                 document.getElementById('countdown-total-rounds').textContent = parseInt(document.getElementById('countdown-rounds').value) || 1;
@@ -396,10 +468,14 @@
                 document.getElementById('countdown-details-display').textContent = 'Get Ready...';
                 setWidgetTheme('countdown', 'prep', 'PREPARATION');
             } else {
-                const displaySecs = countdownCountdownValue === 0 ? 'GO!' : `${String(Math.floor(countdownRemaining / 60)).padStart(2, '0')}:${String(countdownRemaining % 60).padStart(2, '0')}`;
+                const displaySecs = countdownCountdownValue === 0 ? 'GO!' : formatTimeText(countdownRemaining);
                 document.getElementById('countdown-display').textContent = displaySecs;
                 document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
                 setWidgetTheme('countdown', 'countdown', 'COUNTDOWN');
+                
+                // Keep Lock screen updating dynamically
+                const subtitleText = document.getElementById('countdown-details').value || "Countdown running...";
+                updateSystemStatusBar(`${displaySecs} | Round ${countdownCurrentRound}/${countdownTotalRounds}`, subtitleText);
             }
             document.getElementById('countdown-round-display').textContent = countdownCurrentRound;
             document.getElementById('countdown-total-rounds').textContent = countdownTotalRounds;
@@ -413,6 +489,7 @@
 
         function startInterval() {
             if (intervalRunning) return;
+            requestNotificationAccess();
             if (intervalRemaining === 0) {
                 intervalWorkTime = parseInt(document.getElementById('interval-work-time').value) || 30;
                 intervalRecoveryTime = parseInt(document.getElementById('interval-recovery-time').value) || 30;
@@ -430,6 +507,7 @@
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
                         setWidgetTheme('interval', 'prep', 'PREPARATION');
+                        updateSystemStatusBar(`Get Ready! (${intervalStartCountdown}s)`, `Interval Round 1/${intervalTotalRounds}`);
                         intervalStartCountdown--;
                     } else {
                         playTrackBeep(true); intervalInStartPhase = false;
@@ -448,6 +526,7 @@
                                 intervalCurrentRound++; intervalIsWorkPhase = true; intervalRemaining = intervalWorkTime;
                             } else {
                                 clearInterval(intervalTimer); intervalRunning = false; exitFullscreen();
+                                updateSystemStatusBar("Interval Training Completed!", "Done!", false);
                             }
                         }
                     }
@@ -455,17 +534,23 @@
             }, 1000);
         }
 
-        function pauseInterval() { intervalRunning = false; clearInterval(intervalTimer); }
+        function pauseInterval() { 
+            intervalRunning = false; 
+            clearInterval(intervalTimer); 
+            updateSystemStatusBar("Interval Paused", formatTimeText(intervalRemaining));
+        }
+        
         function resetInterval() {
             intervalRunning = false; clearInterval(intervalTimer);
             intervalRemaining = 0; intervalCurrentRound = 1; intervalIsWorkPhase = true; intervalInStartPhase = false;
             updateIntervalDisplay(); exitFullscreen();
+            clearSystemStatusBar();
         }
 
         function updateIntervalDisplay() {
             if (!intervalRunning && intervalRemaining === 0) {
                 const setupWork = parseInt(document.getElementById('interval-work-time').value) || 0;
-                document.getElementById('interval-display').textContent = `${String(Math.floor(setupWork / 60)).padStart(2, '0')}:${String(setupWork % 60).padStart(2, '0')}`;
+                document.getElementById('interval-display').textContent = formatTimeText(setupWork);
                 document.getElementById('interval-details-display').textContent = document.getElementById('interval-work-details').value;
                 document.getElementById('interval-round-display').textContent = '1';
                 document.getElementById('interval-total-rounds').textContent = parseInt(document.getElementById('interval-rounds').value) || 5;
@@ -473,13 +558,19 @@
                 return;
             }
 
-            document.getElementById('interval-display').textContent = `${String(Math.floor(intervalRemaining / 60)).padStart(2, '0')}:${String(intervalRemaining % 60).padStart(2, '0')}`;
+            const currentFormattedTime = formatTimeText(intervalRemaining);
+            document.getElementById('interval-display').textContent = currentFormattedTime;
             document.getElementById('interval-details-display').textContent = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
             
             if (intervalInStartPhase) {
                 setWidgetTheme('interval', 'prep', 'PREPARATION');
             } else {
-                setWidgetTheme('interval', intervalIsWorkPhase ? 'work' : 'recovery', intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE');
+                const activeStateText = intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE';
+                setWidgetTheme('interval', intervalIsWorkPhase ? 'work' : 'recovery', activeStateText);
+                
+                // Track Interval parameters to lock screen notification drawer
+                const taskDescriptor = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
+                updateSystemStatusBar(`[${activeStateText}] ${currentFormattedTime} (R${intervalCurrentRound}/${intervalTotalRounds})`, taskDescriptor || "Keep moving!");
             }
             
             document.getElementById('interval-round-display').textContent = intervalCurrentRound;
@@ -494,12 +585,9 @@
             const roundNum = document.getElementById(`${type}-round-display`);
             
             labelNode.textContent = headingText;
-            
-            // Clean active display node classes
             digitsNode.className = "timer-display";
             if(roundNum) roundNum.className = "";
 
-            // Apply phase specific themes
             if (state === 'work') {
                 topicBox.className = "w-full text-center py-5 bg-emerald-950/20 backdrop-blur-md border-b border-emerald-500/10 shrink-0 transition-all duration-300";
                 labelNode.className = "text-2xl tracking-widest font-black text-emerald-400 block uppercase";
@@ -547,7 +635,6 @@
             if (!intervalRunning && intervalRemaining === 0) updateIntervalDisplay();
         });
 
-        // Setup Layout Baselines on Bootstrap
         updateCountdownDisplay(); updateIntervalDisplay();
     </script>
 </body>
