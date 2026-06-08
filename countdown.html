@@ -293,7 +293,6 @@
         // --- Service Worker Live Notification Integration ---
         let swRegistration = null;
 
-        // Register a system-level notification service worker using an inline Blob URL
         if ('serviceWorker' in navigator && 'Notification' in window) {
             const swCode = `
                 self.addEventListener('message', (event) => {
@@ -301,9 +300,9 @@
                         const { title, body, silent } = event.data;
                         self.registration.showNotification(title, {
                             body: body,
-                            tag: 'live-timer-sync', // Overwrites previous step notification smoothly
-                            renotify: false,        // Prevents phone from vibrating/buzzing every single second
-                            silent: silent,         // Quiet tracking mode
+                            tag: 'live-timer-sync', 
+                            renotify: false,        
+                            silent: silent,         
                             icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>'
                         });
                     } else if (event.data.action === 'clearNotification') {
@@ -322,7 +321,6 @@
             }).catch(err => console.error('Service Worker Registry Failed', err));
         }
 
-        // Send a message to the Service Worker engine to update or dismiss the native system overlay
         function updateSystemStatusBar(title, body, silent = true) {
             if (swRegistration && Notification.permission === 'granted') {
                 if (navigator.serviceWorker.controller) {
@@ -344,8 +342,50 @@
         }
 
         function requestNotificationAccess() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        // --- Background Audio Wake-Lock Engine ---
+        // Keeps the browser's javascript thread execution alive when the screen is locked
+        let wakeLockAudioNode = null;
+        
+        function enableBackgroundWakeLock() {
+            try {
+                const audioCtx = getAudioCtx();
+                if (wakeLockAudioNode) return;
+                
+                // Create an extremely quiet/nearly silent oscillator buffer to act as an audio wake-lock
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz infrasound (silent to human ears)
+                gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);   // Near-zero power footprint
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                
+                wakeLockAudioNode = { oscillator, gainNode };
+                console.log("Background lock-screen wake-lock engaged.");
+            } catch (e) {
+                console.error("Wake-Lock engagement failure:", e);
+            }
+        }
+
+        function disableBackgroundWakeLock() {
+            if (wakeLockAudioNode) {
+                try {
+                    wakeLockAudioNode.oscillator.stop();
+                    wakeLockAudioNode.oscillator.disconnect();
+                    wakeLockAudioNode.gainNode.disconnect();
+                } catch(e) {}
+                wakeLockAudioNode = null;
+                console.log("Background lock-screen wake-lock disengaged.");
             }
         }
         // ---------------------------------------------------
@@ -399,7 +439,9 @@
 
         function startCountdownTimer() {
             if (countdownRunning) return;
-            requestNotificationAccess(); // Ensure permission hook is triggered
+            requestNotificationAccess(); 
+            enableBackgroundWakeLock(); // Engage context audio lock on click
+            
             if (countdownRemaining === 0) {
                 countdownRemaining = getCountdownSetupTime();
                 countdownTotalRounds = parseInt(document.getElementById('countdown-rounds').value) || 1;
@@ -432,6 +474,7 @@
                             countdownRemaining = getCountdownSetupTime();
                         } else {
                             clearInterval(countdownInterval); countdownRunning = false; exitFullscreen();
+                            disableBackgroundWakeLock();
                             updateSystemStatusBar("Timer Finished!", "All rounds completed.", false);
                         }
                     }
@@ -442,11 +485,13 @@
         function pauseCountdownTimer() { 
             countdownRunning = false; 
             clearInterval(countdownInterval); 
+            disableBackgroundWakeLock();
             updateSystemStatusBar("Timer Paused", formatTimeText(countdownRemaining));
         }
         
         function resetCountdownTimer() {
             countdownRunning = false; clearInterval(countdownInterval);
+            disableBackgroundWakeLock();
             countdownRemaining = 0; countdownCurrentRound = 1; countdownCountdownPhase = false; countdownCountdownValue = 5;
             updateCountdownDisplay(); exitFullscreen();
             clearSystemStatusBar();
@@ -473,7 +518,6 @@
                 document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
                 setWidgetTheme('countdown', 'countdown', 'COUNTDOWN');
                 
-                // Keep Lock screen updating dynamically
                 const subtitleText = document.getElementById('countdown-details').value || "Countdown running...";
                 updateSystemStatusBar(`${displaySecs} | Round ${countdownCurrentRound}/${countdownTotalRounds}`, subtitleText);
             }
@@ -490,6 +534,8 @@
         function startInterval() {
             if (intervalRunning) return;
             requestNotificationAccess();
+            enableBackgroundWakeLock();
+            
             if (intervalRemaining === 0) {
                 intervalWorkTime = parseInt(document.getElementById('interval-work-time').value) || 30;
                 intervalRecoveryTime = parseInt(document.getElementById('interval-recovery-time').value) || 30;
@@ -507,7 +553,7 @@
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
                         setWidgetTheme('interval', 'prep', 'PREPARATION');
-                        updateSystemStatusBar(`Get Ready! (${intervalStartCountdown}s)`, `Interval Round 1/${intervalTotalRounds}`);
+                        updateSystemStatusBar("Get Ready!", `Interval Round 1/${intervalTotalRounds} (${intervalStartCountdown}s)`);
                         intervalStartCountdown--;
                     } else {
                         playTrackBeep(true); intervalInStartPhase = false;
@@ -526,6 +572,7 @@
                                 intervalCurrentRound++; intervalIsWorkPhase = true; intervalRemaining = intervalWorkTime;
                             } else {
                                 clearInterval(intervalTimer); intervalRunning = false; exitFullscreen();
+                                disableBackgroundWakeLock();
                                 updateSystemStatusBar("Interval Training Completed!", "Done!", false);
                             }
                         }
@@ -537,11 +584,13 @@
         function pauseInterval() { 
             intervalRunning = false; 
             clearInterval(intervalTimer); 
+            disableBackgroundWakeLock();
             updateSystemStatusBar("Interval Paused", formatTimeText(intervalRemaining));
         }
         
         function resetInterval() {
             intervalRunning = false; clearInterval(intervalTimer);
+            disableBackgroundWakeLock();
             intervalRemaining = 0; intervalCurrentRound = 1; intervalIsWorkPhase = true; intervalInStartPhase = false;
             updateIntervalDisplay(); exitFullscreen();
             clearSystemStatusBar();
@@ -568,7 +617,6 @@
                 const activeStateText = intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE';
                 setWidgetTheme('interval', intervalIsWorkPhase ? 'work' : 'recovery', activeStateText);
                 
-                // Track Interval parameters to lock screen notification drawer
                 const taskDescriptor = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
                 updateSystemStatusBar(`[${activeStateText}] ${currentFormattedTime} (R${intervalCurrentRound}/${intervalTotalRounds})`, taskDescriptor || "Keep moving!");
             }
@@ -577,7 +625,6 @@
             document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
         }
 
-        // Shared Presentation Framework Manager
         function setWidgetTheme(type, state, headingText) {
             const topicBox = document.getElementById(`${type}-topic-box`);
             const labelNode = document.getElementById(`${type}-label-display`);
@@ -622,7 +669,6 @@
             else { activeBtn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-emerald-600 hover:bg-emerald-500"; }
         }
 
-        // Configuration Event Binding Hookups
         document.getElementById('countdown-minutes').addEventListener('input', updateCountdownDisplay);
         document.getElementById('countdown-seconds').addEventListener('input', updateCountdownDisplay);
         document.getElementById('countdown-rounds').addEventListener('input', updateCountdownDisplay);
