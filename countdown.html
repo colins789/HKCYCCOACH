@@ -5,74 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Countdown & Interval Training</title>
+    <title>Training Timer</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body { margin: 0; padding: 0; overflow: hidden; }
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
-        .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.05em; }
+        .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.1em; font-weight: 900; }
         .zone-badge { font-weight: 900; letter-spacing: 0.1em; }
-        @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        .pulse-ring { animation: pulse-ring 2s infinite; }
-        input[type="number"] { font-size: 16px !important; }
+        .countdown-display { font-size: 15vw; line-height: 1; }
+        input[type="number"], textarea { font-size: 16px !important; }
+        .pulse-warning { animation: pulse-warning 0.5s infinite; }
+        @keyframes pulse-warning { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body class="bg-gray-950 text-white font-sans flex flex-col h-screen overflow-hidden">
 
     <!-- Tab Navigation -->
     <div class="flex gap-2 p-3 bg-gray-900 border-b border-gray-800 shrink-0">
-        <button onclick="switchTab('countdown')" class="tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500" data-tab="countdown">
-            ⏳ 倒計時
+        <button onclick="switchTab('training')" class="tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500" data-tab="training">
+            ⏳ Training Timer
         </button>
         <button onclick="switchTab('interval')" class="tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-gray-700 hover:bg-gray-600" data-tab="interval">
-            🔄 間歇訓練
+            🔄 Interval Training
         </button>
     </div>
 
-    <!-- Countdown Timer Tab -->
-    <div id="countdown" class="tab-content active flex-col flex-grow p-4 overflow-y-auto">
+    <!-- Training Timer Tab -->
+    <div id="training" class="tab-content active flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
             <!-- Input Section -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-                <h3 class="text-lg font-black mb-3 text-red-400">倒計時設置</h3>
-                <div class="grid grid-cols-3 gap-3">
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[35vh] overflow-y-auto">
+                <h3 class="text-lg font-black mb-3 text-red-400">Training Timer Setup</h3>
+                <div class="grid grid-cols-3 gap-3 mb-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">分鐘</label>
-                        <input type="number" id="countdown-minutes" value="5" min="0" max="59" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Minutes</label>
+                        <input type="number" id="training-minutes" value="5" min="0" max="59" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">秒鐘</label>
-                        <input type="number" id="countdown-seconds" value="0" min="0" max="59" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Seconds</label>
+                        <input type="number" id="training-seconds" value="0" min="0" max="59" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">輪次</label>
-                        <input type="number" id="countdown-rounds" value="1" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Rounds</label>
+                        <input type="number" id="training-rounds" value="1" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-red-500">
                     </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone (Manual Input)</label>
+                    <input type="text" id="training-zone-input" placeholder="e.g., Zone 4, High Intensity, VO2Max..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Details (Optional)</label>
+                    <textarea id="training-details" placeholder="e.g., Sprint intervals, 30s hard efforts..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 h-20 resize-none"></textarea>
                 </div>
             </div>
 
             <!-- Timer Display -->
             <div class="bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center">
-                <div class="text-center">
-                    <div class="text-sm font-bold text-gray-400 mb-2">恢復時間</div>
-                    <div class="timer-display text-7xl font-black text-red-400 mb-4" id="countdown-display">05:00</div>
-                    <div class="text-lg font-bold text-gray-300">
-                        輪次: <span id="countdown-round-display" class="text-red-400">1</span>/<span id="countdown-total-rounds">1</span>
+                <div class="text-center w-full">
+                    <div id="training-phase-display" class="text-sm font-bold text-gray-400 mb-2">Ready</div>
+                    <div class="timer-display countdown-display text-red-400 mb-4" id="training-display">05:00</div>
+                    <div id="training-zone-display" class="zone-badge text-base mb-3 px-4 py-2 rounded-lg bg-gray-800 text-gray-300 min-h-[2.5rem] flex items-center justify-center">Training Zone</div>
+                    <div class="text-lg font-bold text-gray-300 mb-2">
+                        Round: <span id="training-round-display" class="text-red-400">1</span>/<span id="training-total-rounds">1</span>
                     </div>
+                    <div id="training-details-display" class="text-sm text-gray-400 italic mt-2"></div>
                 </div>
             </div>
 
             <!-- Control Buttons -->
             <div class="grid grid-cols-3 gap-3">
-                <button onclick="startCountdown()" class="py-3 px-4 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black rounded-lg transition active:scale-95">
-                    ▶️ 開始
+                <button onclick="startTraining()" class="py-3 px-4 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black rounded-lg transition active:scale-95">
+                    ▶️ Start
                 </button>
-                <button onclick="pauseCountdown()" class="py-3 px-4 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-black rounded-lg transition active:scale-95">
-                    ⏸️ 暫停
+                <button onclick="pauseTraining()" class="py-3 px-4 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-black rounded-lg transition active:scale-95">
+                    ⏸️ Pause
                 </button>
-                <button onclick="resetCountdown()" class="py-3 px-4 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white font-black rounded-lg transition active:scale-95">
-                    🔄 重置
+                <button onclick="resetTraining()" class="py-3 px-4 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white font-black rounded-lg transition active:scale-95">
+                    🔄 Reset
                 </button>
             </div>
         </div>
@@ -82,126 +95,190 @@
     <div id="interval" class="tab-content flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
             <!-- Input Section -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-                <h3 class="text-lg font-black mb-3 text-emerald-400">間歇訓練設置</h3>
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[40vh] overflow-y-auto">
+                <h3 class="text-lg font-black mb-3 text-emerald-400">Interval Training Setup</h3>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">訓練時間 (秒)</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Work Time (sec)</label>
                         <input type="number" id="interval-work-time" value="30" min="1" max="600" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">恢復時間 (秒)</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Recovery Time (sec)</label>
                         <input type="number" id="interval-recovery-time" value="30" min="1" max="600" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">輪次</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Rounds</label>
                         <input type="number" id="interval-rounds" value="5" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">訓練區間</label>
-                        <select id="interval-zone" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
-                            <option value="none">-- 無 --</option>
-                            <option value="z1">Zone 1 (恢復)</option>
-                            <option value="z2">Zone 2 (基礎)</option>
-                            <option value="z3">Zone 3 (耐力)</option>
-                            <option value="z4">Zone 4 (閾值)</option>
-                            <option value="z5">Zone 5 (VO2Max)</option>
-                            <option value="z6">Zone 6 (無氧)</option>
-                        </select>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone</label>
+                        <input type="text" id="interval-zone-input" placeholder="e.g., Zone 5" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Work Phase Details</label>
+                    <textarea id="interval-work-details" placeholder="e.g., High intensity sprint..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-emerald-500 h-16 resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Recovery Phase Details</label>
+                    <textarea id="interval-recovery-details" placeholder="e.g., Easy pace, catch breath..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-emerald-500 h-16 resize-none"></textarea>
                 </div>
             </div>
 
             <!-- Timer Display -->
             <div class="bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center">
-                <div class="text-center">
-                    <div id="interval-phase-display" class="text-sm font-bold text-gray-400 mb-2">訓練中</div>
-                    <div class="timer-display text-7xl font-black mb-4" id="interval-display">00:30</div>
-                    <div id="interval-zone-display" class="zone-badge text-lg mb-3 px-4 py-2 rounded-lg bg-gray-800 text-gray-300">無區間</div>
-                    <div class="text-lg font-bold text-gray-300">
-                        輪次: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
+                <div class="text-center w-full">
+                    <div id="interval-phase-display" class="text-sm font-bold text-gray-400 mb-2">Work</div>
+                    <div class="timer-display countdown-display text-emerald-400 mb-4" id="interval-display">00:30</div>
+                    <div id="interval-zone-display" class="zone-badge text-base mb-3 px-4 py-2 rounded-lg bg-gray-800 text-gray-300 min-h-[2.5rem] flex items-center justify-center">Training Zone</div>
+                    <div class="text-lg font-bold text-gray-300 mb-2">
+                        Round: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
                     </div>
+                    <div id="interval-details-display" class="text-sm text-gray-400 italic mt-2"></div>
                 </div>
             </div>
 
             <!-- Control Buttons -->
             <div class="grid grid-cols-3 gap-3">
                 <button onclick="startInterval()" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black rounded-lg transition active:scale-95">
-                    ▶️ 開始
+                    ▶️ Start
                 </button>
                 <button onclick="pauseInterval()" class="py-3 px-4 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-black rounded-lg transition active:scale-95">
-                    ⏸️ 暫停
+                    ⏸️ Pause
                 </button>
                 <button onclick="resetInterval()" class="py-3 px-4 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white font-black rounded-lg transition active:scale-95">
-                    🔄 重置
+                    🔄 Reset
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== COUNTDOWN TIMER =====
-        let countdownInterval = null;
-        let countdownRunning = false;
-        let countdownRemaining = 0;
-        let countdownCurrentRound = 1;
-        let countdownTotalRounds = 1;
+        // ===== TRAINING TIMER =====
+        let trainingInterval = null;
+        let trainingRunning = false;
+        let trainingRemaining = 0;
+        let trainingCurrentRound = 1;
+        let trainingTotalRounds = 1;
+        let trainingCountdownPhase = false;
+        let trainingCountdownValue = 5;
 
-        function startCountdown() {
-            if (countdownRunning) return;
+        function startTraining() {
+            if (trainingRunning) return;
             
-            if (countdownRemaining === 0) {
-                const mins = parseInt(document.getElementById('countdown-minutes').value) || 0;
-                const secs = parseInt(document.getElementById('countdown-seconds').value) || 0;
-                countdownRemaining = mins * 60 + secs;
-                countdownTotalRounds = parseInt(document.getElementById('countdown-rounds').value) || 1;
-                countdownCurrentRound = 1;
+            if (trainingRemaining === 0) {
+                const mins = parseInt(document.getElementById('training-minutes').value) || 0;
+                const secs = parseInt(document.getElementById('training-seconds').value) || 0;
+                trainingRemaining = mins * 60 + secs;
+                trainingTotalRounds = parseInt(document.getElementById('training-rounds').value) || 1;
+                trainingCurrentRound = 1;
+                trainingCountdownPhase = true;
+                trainingCountdownValue = 5;
             }
             
-            if (countdownRemaining <= 0) return;
-            
-            countdownRunning = true;
-            countdownInterval = setInterval(() => {
-                countdownRemaining--;
-                updateCountdownDisplay();
-                
-                if (countdownRemaining === 0) {
-                    playSound();
-                    if (countdownCurrentRound < countdownTotalRounds) {
-                        countdownCurrentRound++;
-                        const mins = parseInt(document.getElementById('countdown-minutes').value) || 0;
-                        const secs = parseInt(document.getElementById('countdown-seconds').value) || 0;
-                        countdownRemaining = mins * 60 + secs;
+            if (trainingCountdownPhase) {
+                trainingRunning = true;
+                trainingInterval = setInterval(() => {
+                    if (trainingCountdownValue > 0) {
+                        playCountdownSound();
+                        updateTrainingDisplay();
+                        trainingCountdownValue--;
+                    } else if (trainingCountdownValue === 0) {
+                        playGoSound();
+                        document.getElementById('training-display').textContent = 'GO!';
+                        trainingCountdownPhase = false;
+                        trainingRemaining = parseInt(document.getElementById('training-minutes').value) * 60 + 
+                                          parseInt(document.getElementById('training-seconds').value);
+                        trainingCountdownValue = -1;
+                        updateTrainingDisplay();
                     } else {
-                        clearInterval(countdownInterval);
-                        countdownRunning = false;
+                        trainingRemaining--;
+                        updateTrainingDisplay();
+                        
+                        if (trainingRemaining === 20 || trainingRemaining === 10) {
+                            playWarningSound();
+                        }
+                        
+                        if (trainingRemaining === 0) {
+                            playSound();
+                            if (trainingCurrentRound < trainingTotalRounds) {
+                                trainingCurrentRound++;
+                                trainingCountdownPhase = true;
+                                trainingCountdownValue = 5;
+                            } else {
+                                clearInterval(trainingInterval);
+                                trainingRunning = false;
+                            }
+                        }
                     }
-                }
-            }, 1000);
+                }, 1000);
+            } else {
+                trainingRunning = true;
+                trainingInterval = setInterval(() => {
+                    trainingRemaining--;
+                    updateTrainingDisplay();
+                    
+                    if (trainingRemaining === 20 || trainingRemaining === 10) {
+                        playWarningSound();
+                    }
+                    
+                    if (trainingRemaining === 0) {
+                        playSound();
+                        if (trainingCurrentRound < trainingTotalRounds) {
+                            trainingCurrentRound++;
+                            trainingCountdownPhase = true;
+                            trainingCountdownValue = 5;
+                        } else {
+                            clearInterval(trainingInterval);
+                            trainingRunning = false;
+                        }
+                    }
+                }, 1000);
+            }
         }
 
-        function pauseCountdown() {
-            countdownRunning = false;
-            clearInterval(countdownInterval);
+        function pauseTraining() {
+            trainingRunning = false;
+            clearInterval(trainingInterval);
         }
 
-        function resetCountdown() {
-            countdownRunning = false;
-            clearInterval(countdownInterval);
-            countdownRemaining = 0;
-            countdownCurrentRound = 1;
-            updateCountdownDisplay();
+        function resetTraining() {
+            trainingRunning = false;
+            clearInterval(trainingInterval);
+            trainingRemaining = 0;
+            trainingCurrentRound = 1;
+            trainingCountdownPhase = false;
+            trainingCountdownValue = 5;
+            updateTrainingDisplay();
         }
 
-        function updateCountdownDisplay() {
-            const mins = Math.floor(countdownRemaining / 60);
-            const secs = countdownRemaining % 60;
-            document.getElementById('countdown-display').textContent = 
-                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            document.getElementById('countdown-round-display').textContent = countdownCurrentRound;
-            document.getElementById('countdown-total-rounds').textContent = countdownTotalRounds;
+        function updateTrainingDisplay() {
+            if (trainingCountdownPhase && trainingCountdownValue > 0) {
+                document.getElementById('training-display').textContent = trainingCountdownValue;
+                document.getElementById('training-phase-display').textContent = 'Get Ready...';
+            } else if (trainingCountdownValue === 0) {
+                document.getElementById('training-display').textContent = 'GO!';
+                document.getElementById('training-phase-display').textContent = 'Training';
+            } else {
+                const mins = Math.floor(trainingRemaining / 60);
+                const secs = trainingRemaining % 60;
+                document.getElementById('training-display').textContent = 
+                    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('training-phase-display').textContent = 'Training';
+            }
+            
+            document.getElementById('training-round-display').textContent = trainingCurrentRound;
+            document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
+            
+            const zoneInput = document.getElementById('training-zone-input').value || 'Training Zone';
+            document.getElementById('training-zone-display').textContent = zoneInput;
+            
+            const details = document.getElementById('training-details').value;
+            document.getElementById('training-details-display').textContent = details;
         }
 
         // ===== INTERVAL TRAINING =====
@@ -232,6 +309,10 @@
             intervalTimer = setInterval(() => {
                 intervalRemaining--;
                 updateIntervalDisplay();
+                
+                if (intervalRemaining === 20 || intervalRemaining === 10) {
+                    playWarningSound();
+                }
                 
                 if (intervalRemaining === 0) {
                     playSound();
@@ -272,7 +353,7 @@
             document.getElementById('interval-display').textContent = 
                 `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             
-            const phaseText = intervalIsWorkPhase ? '訓練中' : '恢復中';
+            const phaseText = intervalIsWorkPhase ? 'WORK' : 'RECOVERY';
             const phaseColor = intervalIsWorkPhase ? 'text-emerald-400' : 'text-blue-400';
             document.getElementById('interval-phase-display').textContent = phaseText;
             document.getElementById('interval-phase-display').className = `text-sm font-bold ${phaseColor} mb-2`;
@@ -280,25 +361,13 @@
             document.getElementById('interval-round-display').textContent = intervalCurrentRound;
             document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
             
-            updateZoneDisplay();
-        }
-
-        function updateZoneDisplay() {
-            const zone = document.getElementById('interval-zone').value;
-            const zoneMap = {
-                'none': { text: '無區間', color: 'bg-gray-800 text-gray-300' },
-                'z1': { text: 'Zone 1 - 恢復 (50-60% FTP)', color: 'bg-blue-900 text-blue-200' },
-                'z2': { text: 'Zone 2 - 基礎 (60-75% FTP)', color: 'bg-green-900 text-green-200' },
-                'z3': { text: 'Zone 3 - 耐力 (75-90% FTP)', color: 'bg-yellow-900 text-yellow-200' },
-                'z4': { text: 'Zone 4 - 閾值 (90-105% FTP)', color: 'bg-orange-900 text-orange-200' },
-                'z5': { text: 'Zone 5 - VO2Max (105-120% FTP)', color: 'bg-red-900 text-red-200' },
-                'z6': { text: 'Zone 6 - 無氧 (>120% FTP)', color: 'bg-purple-900 text-purple-200' }
-            };
+            const zoneInput = document.getElementById('interval-zone-input').value || 'Training Zone';
+            document.getElementById('interval-zone-display').textContent = zoneInput;
             
-            const info = zoneMap[zone] || zoneMap['none'];
-            const display = document.getElementById('interval-zone-display');
-            display.textContent = info.text;
-            display.className = `zone-badge text-lg mb-3 px-4 py-2 rounded-lg ${info.color}`;
+            const details = intervalIsWorkPhase ? 
+                document.getElementById('interval-work-details').value : 
+                document.getElementById('interval-recovery-details').value;
+            document.getElementById('interval-details-display').textContent = details;
         }
 
         // ===== TAB SWITCHING =====
@@ -312,14 +381,69 @@
             document.getElementById(tabName).classList.add('active');
             const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
             activeBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            if (tabName === 'countdown') {
+            if (tabName === 'training') {
                 activeBtn.classList.add('bg-red-600', 'hover:bg-red-500');
             } else {
                 activeBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
             }
         }
 
-        // ===== UTILITIES =====
+        // ===== SOUND UTILITIES =====
+        function playCountdownSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 600;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playGoSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(800, audioContext.currentTime + 0.2);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playWarningSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 1000;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
         function playSound() {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -339,7 +463,7 @@
         }
 
         // Initialize displays
-        updateCountdownDisplay();
+        updateTrainingDisplay();
         updateIntervalDisplay();
     </script>
 </body>
