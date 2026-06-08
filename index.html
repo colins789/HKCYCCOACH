@@ -152,7 +152,7 @@
             <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Lap Timer</span>
             <button onclick="closeTool('timer-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./timer.html" class="w-full h-full border-none bg-transparent"></iframe>
+        <iframe data-src="./timer.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
     <!-- 個人計時 (TT Timer) -->
@@ -161,7 +161,7 @@
             <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>TT Timer</span>
             <button onclick="closeTool('tt-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./tt.html" class="w-full h-full border-none bg-transparent"></iframe>
+        <iframe data-src="./tt.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
     <!-- 全能計算 (Omnium Calculator) -->
@@ -170,7 +170,7 @@
             <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Omnium Calculator</span>
             <button onclick="closeTool('omnium-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./omnium.html" class="w-full h-full border-none bg-transparent"></iframe>
+        <iframe data-src="./omnium.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
     <!-- Training Timer -->
@@ -179,17 +179,30 @@
             <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Training Timer</span>
             <button onclick="closeTool('countdown-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./countdown.html" class="w-full h-full border-none bg-transparent" allowfullscreen="true" allow="fullscreen"></iframe>
+        <iframe data-src="./countdown.html" class="w-full h-full border-none bg-transparent" allowfullscreen="true" allow="fullscreen"></iframe>
     </div>
 
     <script>
+        // Track which modals have been loaded to avoid re-loading iframes
+        const _loadedModals = new Set();
+
         function openTool(id) { 
             const targetModal = document.getElementById(id);
             if (targetModal) {
                 targetModal.classList.add('modal-active'); 
                 document.body.classList.add('overflow-hidden');
-                const iframe = targetModal.querySelector('iframe');
-                if (iframe && iframe.src) { iframe.src = iframe.src; }
+                // Only load the iframe on FIRST open — never reload it again.
+                // Iframes use data-src so they do NOT load on page start.
+                // On subsequent opens the modal is simply shown; the iframe
+                // keeps running in the background, preserving all timer state.
+                if (!_loadedModals.has(id)) {
+                    _loadedModals.add(id);
+                    const iframe = targetModal.querySelector('iframe[data-src]');
+                    if (iframe) {
+                        iframe.src = iframe.getAttribute('data-src');
+                    }
+                }
+                // On subsequent opens: do nothing — iframe keeps running in background
             }
         }
         

@@ -853,6 +853,9 @@
         const toast = document.getElementById('toast');
 
         // --- 🟢 Fix Background Audio Sleep Interruption Engine ---
+        // Also restart the rAF display loop if the timer is still running when
+        // the user returns from another tool (browsers throttle/kill rAF in
+        // hidden iframes, so we need to kick it again on visibility restore).
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 try {
@@ -862,6 +865,9 @@
                 } catch (err) {
                     console.error(err);
                 }
+                // Restart display loop if timer is still running
+                // (uses kickTimerUI to prevent duplicate rAF chains)
+                kickTimerUI();
             }
         });
 
@@ -1124,12 +1130,21 @@
             setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
 
+        let _rafRunning = false;
         function updateTimerUI() {
-            if (!isRunning) return;
+            if (!isRunning) { _rafRunning = false; return; }
             const now = Date.now();
             totalTimerEl.textContent = formatTime(now - startTime);
             runningLapTimerEl.textContent = formatTime(now - lastLapTime);
             requestAnimationFrame(updateTimerUI);
+        }
+
+        // Safe wrapper: only starts a new rAF loop if one is not already running
+        function kickTimerUI() {
+            if (!_rafRunning && isRunning) {
+                _rafRunning = true;
+                requestAnimationFrame(updateTimerUI);
+            }
         }
 
         function updateLapsRemaining() {
@@ -1248,6 +1263,7 @@
             document.querySelector('.header-left').style.pointerEvents = 'none';
             
             updateLapsRemaining();
+            _rafRunning = true;
             requestAnimationFrame(updateTimerUI);
         }
 
@@ -1335,6 +1351,7 @@
 
         function resetAll() {
             isRunning = false;
+            _rafRunning = false;
             window.isCountingDown = false;
             tapArea.style.pointerEvents = 'auto';
             mainBtn.style.pointerEvents = 'auto';
