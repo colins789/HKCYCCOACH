@@ -85,7 +85,7 @@
         }
         
         body.fullscreen-mode .phase-display {
-            font-size: clamp(40px, 15vw, 15vh) !important;
+            font-size: clamp(50px, 20vw, 20vh) !important;
             line-height: 1.2;
             font-weight: 900;
         }
@@ -194,7 +194,7 @@
             <!-- Input Section -->
             <div id="setup-section-interval" class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[40vh] overflow-y-auto">
                 <h3 class="text-lg font-black mb-3 text-emerald-400">Interval Training Setup</h3>
-                <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="grid grid-cols-3 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 mb-1">Work Time (sec)</label>
                         <input type="number" id="interval-work-time" value="30" min="1" max="600" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
@@ -203,8 +203,6 @@
                         <label class="block text-xs font-bold text-gray-400 mb-1">Recovery Time (sec)</label>
                         <input type="number" id="interval-recovery-time" value="30" min="1" max="600" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
                     </div>
-                </div>
-                <div class="grid grid-cols-1 gap-3 mb-4">
                     <div>
                         <label class="block text-xs font-bold text-gray-400 mb-1">Rounds</label>
                         <input type="number" id="interval-rounds" value="5" min="1" max="100" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-center font-bold text-white focus:outline-none focus:border-emerald-500">
