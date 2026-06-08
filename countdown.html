@@ -70,7 +70,6 @@
             padding: 0;
         }
         
-        /* LARGE PHASE DETAILS STYLING */
         .phase-display {
             font-size: clamp(24px, 5.5vw, 42px) !important;
             line-height: 1.2;
@@ -99,13 +98,11 @@
             display: flex !important; 
         }
         
-        /* Dynamic Theme Glow Colors */
         .theme-work { color: #10b981 !important; text-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
         .theme-recovery { color: #06b6d4 !important; text-shadow: 0 0 30px rgba(6, 182, 212, 0.4); }
         .theme-prep { color: #f59e0b !important; text-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
         .theme-countdown { color: #ef4444 !important; text-shadow: 0 0 30px rgba(239, 68, 68, 0.4); }
 
-        /* Portrait adjustments */
         @media (orientation: portrait) {
             body.fullscreen-mode .timer-container {
                 padding: 0 0 2rem 0; 
@@ -117,7 +114,6 @@
             body.fullscreen-mode .round-display { font-size: clamp(18px, 5vw, 6vh) !important; }
         }
         
-        /* Landscape adjustments */
         @media (orientation: landscape) {
             body.fullscreen-mode .timer-container {
                 padding: 0 0 1rem 0; 
@@ -136,7 +132,6 @@
             body.fullscreen-mode .round-display { position: absolute; bottom: 1.5rem; right: 2.5rem; font-size: clamp(16px, 3.5vw, 5vh) !important; }
         }
         
-        /* Premium Floating Exit Fullscreen Action Control Style */
         .exit-fullscreen-btn { 
             display: none; 
             align-items: center;
@@ -202,7 +197,6 @@
             </div>
 
             <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative overflow-hidden">
-                
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn" aria-label="Exit Fullscreen">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
@@ -260,7 +254,6 @@
             </div>
 
             <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative overflow-hidden">
-                
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn" aria-label="Exit Fullscreen">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
@@ -342,15 +335,12 @@
         }
 
         function requestNotificationAccess() {
-            if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    Notification.requestPermission();
-                }
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
             }
         }
 
-        // --- Background Audio Wake-Lock Engine ---
-        // Keeps the browser's javascript thread execution alive when the screen is locked
+        // --- Audio Wake-Lock Engine ---
         let wakeLockAudioNode = null;
         
         function enableBackgroundWakeLock() {
@@ -358,22 +348,21 @@
                 const audioCtx = getAudioCtx();
                 if (wakeLockAudioNode) return;
                 
-                // Create an extremely quiet/nearly silent oscillator buffer to act as an audio wake-lock
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
                 oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(1, audioCtx.currentTime); // 1Hz infrasound (silent to human ears)
-                gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);   // Near-zero power footprint
+                oscillator.frequency.setValueAtTime(1, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(0.001, audioCtx.currentTime);   
                 
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 oscillator.start();
                 
                 wakeLockAudioNode = { oscillator, gainNode };
-                console.log("Background lock-screen wake-lock engaged.");
+                console.log("Background wake-lock engaged.");
             } catch (e) {
-                console.error("Wake-Lock engagement failure:", e);
+                console.error("Wake-Lock execution skipped:", e);
             }
         }
 
@@ -385,10 +374,9 @@
                     wakeLockAudioNode.gainNode.disconnect();
                 } catch(e) {}
                 wakeLockAudioNode = null;
-                console.log("Background lock-screen wake-lock disengaged.");
+                console.log("Background wake-lock released.");
             }
         }
-        // ---------------------------------------------------
 
         function getAudioCtx() {
             if (!window.sharedAudioCtx) window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -424,23 +412,25 @@
             document.body.classList.remove('fullscreen-mode');
         }
 
-        // Countdown Module Engine
-        let countdownInterval = null, countdownRunning = false, countdownRemaining = 0;
-        let countdownCurrentRound = 1, countdownTotalRounds = 1;
+        function formatTimeText(totalSecs) {
+            if (totalSecs < 0) totalSecs = 0;
+            return `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
+        }
+
+        // --- Core Modules Tracking Anchored Architecture ---
+        let countdownInterval = null, countdownRunning = false;
+        let countdownRemaining = 0, countdownCurrentRound = 1, countdownTotalRounds = 1;
         let countdownCountdownPhase = false, countdownCountdownValue = 5;
+        let countdownExpectedEndTime = null; // Time Anchor
 
         function getCountdownSetupTime() {
             return (parseInt(document.getElementById('countdown-minutes').value) || 0) * 60 + (parseInt(document.getElementById('countdown-seconds').value) || 0);
         }
 
-        function formatTimeText(totalSecs) {
-            return `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
-        }
-
         function startCountdownTimer() {
             if (countdownRunning) return;
             requestNotificationAccess(); 
-            enableBackgroundWakeLock(); // Engage context audio lock on click
+            enableBackgroundWakeLock(); 
             
             if (countdownRemaining === 0) {
                 countdownRemaining = getCountdownSetupTime();
@@ -448,38 +438,61 @@
                 countdownCurrentRound = 1; countdownCountdownPhase = true; countdownCountdownValue = 5;
                 requestFullscreen(document.body);
             }
+            
             countdownRunning = true;
+            // Record the precise millisecond value when this block should end
+            calculateNextCountdownAnchor();
+
             countdownInterval = setInterval(() => {
+                const now = Date.now();
+                
                 if (countdownCountdownPhase) {
+                    const diffSeconds = Math.ceil((countdownExpectedEndTime - now) / 1000);
+                    countdownCountdownValue = diffSeconds;
+                    
                     if (countdownCountdownValue > 0) {
-                        playTrackBeep(false);
+                        if (countdownCountdownValue <= 5) playTrackBeep(false);
                         document.getElementById('countdown-display').textContent = countdownCountdownValue;
                         document.getElementById('countdown-details-display').textContent = 'Get Ready...';
-                        
                         setWidgetTheme('countdown', 'prep', 'PREPARATION');
                         updateSystemStatusBar(`Get Ready! (${countdownCountdownValue}s)`, `Round ${countdownCurrentRound}/${countdownTotalRounds}`);
-                        countdownCountdownValue--;
                     } else {
-                        playTrackBeep(true); countdownCountdownPhase = false; countdownCountdownValue = -1;
+                        playTrackBeep(true); 
+                        countdownCountdownPhase = false; 
+                        countdownCountdownValue = -1;
+                        countdownRemaining = getCountdownSetupTime();
+                        calculateNextCountdownAnchor();
                         updateCountdownDisplay();
                     }
                 } else {
-                    countdownRemaining--;
-                    updateCountdownDisplay();
-                    if (countdownRemaining === 20 || countdownRemaining === 10) playTrackBeep(false);
-                    if (countdownRemaining === 0) {
+                    const diffSeconds = Math.ceil((countdownExpectedEndTime - now) / 1000);
+                    countdownRemaining = diffSeconds;
+
+                    if (countdownRemaining > 0) {
+                        updateCountdownDisplay();
+                        if (countdownRemaining === 20 || countdownRemaining === 10) playTrackBeep(false);
+                    } else {
                         playTrackBeep(true);
                         if (countdownCurrentRound < countdownTotalRounds) {
-                            countdownCurrentRound++; countdownCountdownPhase = true; countdownCountdownValue = 5;
-                            countdownRemaining = getCountdownSetupTime();
+                            countdownCurrentRound++; 
+                            countdownCountdownPhase = true; 
+                            countdownCountdownValue = 5;
+                            calculateNextCountdownAnchor();
                         } else {
-                            clearInterval(countdownInterval); countdownRunning = false; exitFullscreen();
+                            clearInterval(countdownInterval); 
+                            countdownRunning = false; 
+                            exitFullscreen();
                             disableBackgroundWakeLock();
                             updateSystemStatusBar("Timer Finished!", "All rounds completed.", false);
                         }
                     }
                 }
-            }, 1000);
+            }, 250); // High sample rate checking prevents skipping background time frames
+        }
+
+        function calculateNextCountdownAnchor() {
+            const span = countdownCountdownPhase ? countdownCountdownValue : countdownRemaining;
+            countdownExpectedEndTime = Date.now() + (span * 1000);
         }
 
         function pauseCountdownTimer() { 
@@ -513,7 +526,7 @@
                 document.getElementById('countdown-details-display').textContent = 'Get Ready...';
                 setWidgetTheme('countdown', 'prep', 'PREPARATION');
             } else {
-                const displaySecs = countdownCountdownValue === 0 ? 'GO!' : formatTimeText(countdownRemaining);
+                const displaySecs = formatTimeText(countdownRemaining);
                 document.getElementById('countdown-display').textContent = displaySecs;
                 document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
                 setWidgetTheme('countdown', 'countdown', 'COUNTDOWN');
@@ -530,6 +543,7 @@
         let intervalCurrentRound = 1, intervalTotalRounds = 1;
         let intervalIsWorkPhase = true, intervalWorkTime = 30, intervalRecoveryTime = 30;
         let intervalStartCountdown = 5, intervalInStartPhase = false;
+        let intervalExpectedEndTime = null; // Time Anchor
 
         function startInterval() {
             if (intervalRunning) return;
@@ -546,39 +560,63 @@
             }
             
             intervalRunning = true;
+            calculateNextIntervalAnchor();
+
             intervalTimer = setInterval(() => {
+                const now = Date.now();
+                
                 if (intervalInStartPhase) {
+                    const diffSeconds = Math.ceil((intervalExpectedEndTime - now) / 1000);
+                    intervalStartCountdown = diffSeconds;
+
                     if (intervalStartCountdown > 0) {
-                        playTrackBeep(false);
+                        if (intervalStartCountdown <= 5) playTrackBeep(false);
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
                         setWidgetTheme('interval', 'prep', 'PREPARATION');
                         updateSystemStatusBar("Get Ready!", `Interval Round 1/${intervalTotalRounds} (${intervalStartCountdown}s)`);
-                        intervalStartCountdown--;
                     } else {
-                        playTrackBeep(true); intervalInStartPhase = false;
+                        playTrackBeep(true); 
+                        intervalInStartPhase = false;
+                        intervalRemaining = intervalWorkTime;
+                        calculateNextIntervalAnchor();
                         updateIntervalDisplay();
                     }
                 } else {
-                    intervalRemaining--;
-                    updateIntervalDisplay();
-                    if (!intervalIsWorkPhase && intervalRemaining <= 5 && intervalRemaining > 0) playTrackBeep(false);
-                    if (intervalRemaining === 0) {
+                    const diffSeconds = Math.ceil((intervalExpectedEndTime - now) / 1000);
+                    intervalRemaining = diffSeconds;
+
+                    if (intervalRemaining > 0) {
+                        updateIntervalDisplay();
+                        if (!intervalIsWorkPhase && intervalRemaining <= 5) playTrackBeep(false);
+                    } else {
                         playTrackBeep(true);
                         if (intervalIsWorkPhase) {
-                            intervalIsWorkPhase = false; intervalRemaining = intervalRecoveryTime;
+                            intervalIsWorkPhase = false; 
+                            intervalRemaining = intervalRecoveryTime;
+                            calculateNextIntervalAnchor();
                         } else {
                             if (intervalCurrentRound < intervalTotalRounds) {
-                                intervalCurrentRound++; intervalIsWorkPhase = true; intervalRemaining = intervalWorkTime;
+                                intervalCurrentRound++; 
+                                intervalIsWorkPhase = true; 
+                                intervalRemaining = intervalWorkTime;
+                                calculateNextIntervalAnchor();
                             } else {
-                                clearInterval(intervalTimer); intervalRunning = false; exitFullscreen();
+                                clearInterval(intervalTimer); 
+                                intervalRunning = false; 
+                                exitFullscreen();
                                 disableBackgroundWakeLock();
                                 updateSystemStatusBar("Interval Training Completed!", "Done!", false);
                             }
                         }
                     }
                 }
-            }, 1000);
+            }, 250);
+        }
+
+        function calculateNextIntervalAnchor() {
+            const span = intervalInStartPhase ? intervalStartCountdown : intervalRemaining;
+            intervalExpectedEndTime = Date.now() + (span * 1000);
         }
 
         function pauseInterval() { 
@@ -668,6 +706,12 @@
             if (tabName === 'countdown') { activeBtn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500"; } 
             else { activeBtn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-emerald-600 hover:bg-emerald-500"; }
         }
+
+        // Sync calculations automatically if the user manually minimizes/hides the tab context
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && countdownRunning) calculateNextCountdownAnchor();
+            if (!document.hidden && intervalRunning) calculateNextIntervalAnchor();
+        });
 
         document.getElementById('countdown-minutes').addEventListener('input', updateCountdownDisplay);
         document.getElementById('countdown-seconds').addEventListener('input', updateCountdownDisplay);
