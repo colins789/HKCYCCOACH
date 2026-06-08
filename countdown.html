@@ -8,21 +8,27 @@
     <title>Training Timer</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; }
+        body { margin: 0; padding: 0; overflow: hidden; background-color: #030712; }
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
         .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.1em; font-weight: 900; }
         .zone-badge { font-weight: 900; letter-spacing: 0.1em; }
         .countdown-display { font-size: 15vw; line-height: 1; }
-        input[type="number"], textarea { font-size: 16px !important; }
-        .pulse-warning { animation: pulse-warning 0.5s infinite; }
-        @keyframes pulse-warning { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .fullscreen-display { font-size: 40vw !important; }
+        input[type="number"], textarea, input[type="text"] { font-size: 16px !important; }
+        
+        /* Fullscreen styles */
+        .is-fullscreen #setup-section, .is-fullscreen .tab-navigation { display: none !important; }
+        .is-fullscreen .timer-container { height: 100vh !important; width: 100vw !important; position: fixed; top: 0; left: 0; z-index: 100; background: #030712; }
+        .is-fullscreen .timer-display { font-size: 45vw !important; }
+        .is-fullscreen .exit-fullscreen-btn { display: block !important; }
+        .exit-fullscreen-btn { display: none; position: absolute; top: 20px; right: 20px; z-index: 110; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body class="bg-gray-950 text-white font-sans flex flex-col h-screen overflow-hidden">
 
     <!-- Tab Navigation -->
-    <div class="flex gap-2 p-3 bg-gray-900 border-b border-gray-800 shrink-0">
+    <div class="tab-navigation flex gap-2 p-3 bg-gray-900 border-b border-gray-800 shrink-0">
         <button onclick="switchTab('training')" class="tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500" data-tab="training">
             ⏳ Training Timer
         </button>
@@ -35,7 +41,7 @@
     <div id="training" class="tab-content active flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
             <!-- Input Section -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[35vh] overflow-y-auto">
+            <div id="setup-section" class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[35vh] overflow-y-auto">
                 <h3 class="text-lg font-black mb-3 text-red-400">Training Timer Setup</h3>
                 <div class="grid grid-cols-3 gap-3 mb-4">
                     <div>
@@ -53,18 +59,19 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone (Manual Input)</label>
-                    <input type="text" id="training-zone-input" placeholder="e.g., Zone 4, High Intensity, VO2Max..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500">
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Zone</label>
+                    <input type="text" id="training-zone-input" placeholder="e.g., Zone 4" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Details (Optional)</label>
-                    <textarea id="training-details" placeholder="e.g., Sprint intervals, 30s hard efforts..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 h-20 resize-none"></textarea>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Training Details</label>
+                    <textarea id="training-details" placeholder="e.g., Sprint intervals..." class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 h-20 resize-none"></textarea>
                 </div>
             </div>
 
             <!-- Timer Display -->
-            <div class="bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center">
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
+                <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit Fullscreen</button>
                 <div class="text-center w-full">
                     <div id="training-phase-display" class="text-sm font-bold text-gray-400 mb-2">Ready</div>
                     <div class="timer-display countdown-display text-red-400 mb-4" id="training-display">05:00</div>
@@ -95,7 +102,7 @@
     <div id="interval" class="tab-content flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
             <!-- Input Section -->
-            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[40vh] overflow-y-auto">
+            <div id="setup-section-interval" class="bg-gray-900 p-4 rounded-xl border border-gray-800 max-h-[40vh] overflow-y-auto">
                 <h3 class="text-lg font-black mb-3 text-emerald-400">Interval Training Setup</h3>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
@@ -130,7 +137,8 @@
             </div>
 
             <!-- Timer Display -->
-            <div class="bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center">
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col items-center justify-center relative">
+                <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit Fullscreen</button>
                 <div class="text-center w-full">
                     <div id="interval-phase-display" class="text-sm font-bold text-gray-400 mb-2">Work</div>
                     <div class="timer-display countdown-display text-emerald-400 mb-4" id="interval-display">00:30</div>
@@ -158,6 +166,26 @@
     </div>
 
     <script>
+        // Audio Context Helper
+        function getAudioCtx() {
+            if (!window.sharedAudioCtx) {
+                window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (window.sharedAudioCtx.state === 'suspended') {
+                window.sharedAudioCtx.resume();
+            }
+            return window.sharedAudioCtx;
+        }
+
+        // Fullscreen Helpers
+        function enterFullscreen() {
+            document.body.classList.add('is-fullscreen');
+        }
+
+        function exitFullscreen() {
+            document.body.classList.remove('is-fullscreen');
+        }
+
         // ===== TRAINING TIMER =====
         let trainingInterval = null;
         let trainingRunning = false;
@@ -165,7 +193,7 @@
         let trainingCurrentRound = 1;
         let trainingTotalRounds = 1;
         let trainingCountdownPhase = false;
-        let trainingCountdownValue = 5;
+        let trainingCountdownValue = 10;
 
         function startTraining() {
             if (trainingRunning) return;
@@ -177,68 +205,45 @@
                 trainingTotalRounds = parseInt(document.getElementById('training-rounds').value) || 1;
                 trainingCurrentRound = 1;
                 trainingCountdownPhase = true;
-                trainingCountdownValue = 5;
+                trainingCountdownValue = 10;
+                enterFullscreen();
             }
             
-            if (trainingCountdownPhase) {
-                trainingRunning = true;
-                trainingInterval = setInterval(() => {
+            trainingRunning = true;
+            trainingInterval = setInterval(() => {
+                if (trainingCountdownPhase) {
                     if (trainingCountdownValue > 0) {
-                        playCountdownSound();
+                        playTrackBeep(false);
                         updateTrainingDisplay();
                         trainingCountdownValue--;
-                    } else if (trainingCountdownValue === 0) {
-                        playGoSound();
-                        document.getElementById('training-display').textContent = 'GO!';
+                    } else {
+                        playTrackBeep(true);
                         trainingCountdownPhase = false;
-                        trainingRemaining = parseInt(document.getElementById('training-minutes').value) * 60 + 
-                                          parseInt(document.getElementById('training-seconds').value);
                         trainingCountdownValue = -1;
                         updateTrainingDisplay();
-                    } else {
-                        trainingRemaining--;
-                        updateTrainingDisplay();
-                        
-                        if (trainingRemaining === 20 || trainingRemaining === 10) {
-                            playWarningSound();
-                        }
-                        
-                        if (trainingRemaining === 0) {
-                            playSound();
-                            if (trainingCurrentRound < trainingTotalRounds) {
-                                trainingCurrentRound++;
-                                trainingCountdownPhase = true;
-                                trainingCountdownValue = 5;
-                            } else {
-                                clearInterval(trainingInterval);
-                                trainingRunning = false;
-                            }
-                        }
                     }
-                }, 1000);
-            } else {
-                trainingRunning = true;
-                trainingInterval = setInterval(() => {
+                } else {
                     trainingRemaining--;
                     updateTrainingDisplay();
                     
                     if (trainingRemaining === 20 || trainingRemaining === 10) {
-                        playWarningSound();
+                        playTrackBeep(false);
                     }
                     
                     if (trainingRemaining === 0) {
-                        playSound();
+                        playTrackBeep(true);
                         if (trainingCurrentRound < trainingTotalRounds) {
                             trainingCurrentRound++;
                             trainingCountdownPhase = true;
-                            trainingCountdownValue = 5;
+                            trainingCountdownValue = 10;
                         } else {
                             clearInterval(trainingInterval);
                             trainingRunning = false;
+                            exitFullscreen();
                         }
                     }
-                }, 1000);
-            }
+                }
+            }, 1000);
         }
 
         function pauseTraining() {
@@ -252,8 +257,9 @@
             trainingRemaining = 0;
             trainingCurrentRound = 1;
             trainingCountdownPhase = false;
-            trainingCountdownValue = 5;
+            trainingCountdownValue = 10;
             updateTrainingDisplay();
+            exitFullscreen();
         }
 
         function updateTrainingDisplay() {
@@ -273,12 +279,8 @@
             
             document.getElementById('training-round-display').textContent = trainingCurrentRound;
             document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
-            
-            const zoneInput = document.getElementById('training-zone-input').value || 'Training Zone';
-            document.getElementById('training-zone-display').textContent = zoneInput;
-            
-            const details = document.getElementById('training-details').value;
-            document.getElementById('training-details-display').textContent = details;
+            document.getElementById('training-zone-display').textContent = document.getElementById('training-zone-input').value || 'Training Zone';
+            document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
         }
 
         // ===== INTERVAL TRAINING =====
@@ -290,6 +292,8 @@
         let intervalIsWorkPhase = true;
         let intervalWorkTime = 30;
         let intervalRecoveryTime = 30;
+        let intervalStartCountdown = 10;
+        let intervalInStartPhase = false;
 
         function startInterval() {
             if (intervalRunning) return;
@@ -301,32 +305,48 @@
                 intervalCurrentRound = 1;
                 intervalIsWorkPhase = true;
                 intervalRemaining = intervalWorkTime;
+                intervalStartCountdown = 10;
+                intervalInStartPhase = true;
+                enterFullscreen();
             }
-            
-            if (intervalRemaining <= 0) return;
             
             intervalRunning = true;
             intervalTimer = setInterval(() => {
-                intervalRemaining--;
-                updateIntervalDisplay();
-                
-                if (intervalRemaining === 20 || intervalRemaining === 10) {
-                    playWarningSound();
-                }
-                
-                if (intervalRemaining === 0) {
-                    playSound();
-                    if (intervalIsWorkPhase) {
-                        intervalIsWorkPhase = false;
-                        intervalRemaining = intervalRecoveryTime;
+                if (intervalInStartPhase) {
+                    if (intervalStartCountdown > 0) {
+                        playTrackBeep(false);
+                        document.getElementById('interval-display').textContent = intervalStartCountdown;
+                        document.getElementById('interval-phase-display').textContent = 'Get Ready...';
+                        intervalStartCountdown--;
                     } else {
-                        if (intervalCurrentRound < intervalTotalRounds) {
-                            intervalCurrentRound++;
-                            intervalIsWorkPhase = true;
-                            intervalRemaining = intervalWorkTime;
+                        playTrackBeep(true);
+                        intervalInStartPhase = false;
+                        updateIntervalDisplay();
+                    }
+                } else {
+                    intervalRemaining--;
+                    updateIntervalDisplay();
+                    
+                    // Sound reminders
+                    if (intervalRemaining <= 5 && intervalRemaining > 0) {
+                        playTrackBeep(false);
+                    }
+                    
+                    if (intervalRemaining === 0) {
+                        playTrackBeep(true);
+                        if (intervalIsWorkPhase) {
+                            intervalIsWorkPhase = false;
+                            intervalRemaining = intervalRecoveryTime;
                         } else {
-                            clearInterval(intervalTimer);
-                            intervalRunning = false;
+                            if (intervalCurrentRound < intervalTotalRounds) {
+                                intervalCurrentRound++;
+                                intervalIsWorkPhase = true;
+                                intervalRemaining = intervalWorkTime;
+                            } else {
+                                clearInterval(intervalTimer);
+                                intervalRunning = false;
+                                exitFullscreen();
+                            }
                         }
                     }
                 }
@@ -344,7 +364,9 @@
             intervalRemaining = 0;
             intervalCurrentRound = 1;
             intervalIsWorkPhase = true;
+            intervalInStartPhase = false;
             updateIntervalDisplay();
+            exitFullscreen();
         }
 
         function updateIntervalDisplay() {
@@ -360,9 +382,7 @@
             
             document.getElementById('interval-round-display').textContent = intervalCurrentRound;
             document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
-            
-            const zoneInput = document.getElementById('interval-zone-input').value || 'Training Zone';
-            document.getElementById('interval-zone-display').textContent = zoneInput;
+            document.getElementById('interval-zone-display').textContent = document.getElementById('interval-zone-input').value || 'Training Zone';
             
             const details = intervalIsWorkPhase ? 
                 document.getElementById('interval-work-details').value : 
@@ -388,78 +408,29 @@
             }
         }
 
-        // ===== SOUND UTILITIES =====
-        function playCountdownSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 600;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
-        }
-
-        function playGoSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-            oscillator.frequency.linearRampToValueAtTime(800, audioContext.currentTime + 0.2);
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        }
-
-        function playWarningSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 1000;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.2);
-        }
-
-        function playSound() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+        // ===== SOUND UTILITIES (Synced with timer.html) =====
+        function playTrackBeep(isFinal) {
+            try {
+                const audioCtx = getAudioCtx();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(isFinal ? 990 : 490, audioCtx.currentTime);
+                
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.01);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime + (isFinal ? 0.8 : 0.4) - 0.01);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (isFinal ? 0.8 : 0.4));
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + (isFinal ? 0.8 : 0.4));
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         // Initialize displays
