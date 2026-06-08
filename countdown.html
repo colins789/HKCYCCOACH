@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Training Timer</title>
+    <!-- Tailwind CSS v4 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         * {
@@ -26,7 +27,7 @@
         
         .tab-content { display: none; }
         .tab-content.active { display: flex; }
-        .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.1em; font-weight: 900; }
+        .timer-display { font-family: 'Monaco', 'Courier New', monospace; letter-spacing: 0.1em; font-weight: 900; transition: color 0.3s ease; }
         input[type="number"], textarea, input[type="text"] { font-size: 16px !important; }
         
         /* Fullscreen styles */
@@ -59,20 +60,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: justify-between;
             background: linear-gradient(135deg, #030712 0%, #0f0f1e 100%);
         }
         
         body.fullscreen-mode .timer-display {
             font-size: clamp(60px, 32vw, 40vh) !important;
             line-height: 1;
-            color: #10b981;
-            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
             margin: 0;
             padding: 0;
         }
         
-        /* LARGER PHASE DETAILS STYLING */
+        /* LARGE PHASE DETAILS STYLING */
         .phase-display {
             font-size: clamp(24px, 5.5vw, 42px) !important;
             line-height: 1.2;
@@ -94,7 +93,6 @@
         
         body.fullscreen-mode .round-display {
             font-size: clamp(18px, 4vw, 5vh) !important;
-            margin-top: 1rem;
             color: #9ca3af;
         }
         
@@ -102,72 +100,54 @@
             display: block !important; 
         }
         
+        /* Dynamic Theme Glow Colors */
+        .theme-work { color: #10b981 !important; text-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        .theme-recovery { color: #06b6d4 !important; text-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+        .theme-prep { color: #f59e0b !important; text-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+        .theme-training { color: #ef4444 !important; text-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+
         /* Portrait adjustments */
         @media (orientation: portrait) {
             body.fullscreen-mode .timer-container {
-                padding: 1rem 0.5rem; 
-                justify-content: space-around;
+                padding: 0 0 2rem 0; 
+                justify-content: space-between;
                 gap: 0.5rem; 
             }
-            
-            body.fullscreen-mode .timer-display {
-                font-size: clamp(60px, 28vw, 32vh) !important;
-                margin: 0;
-            }
-            
-            body.fullscreen-mode .phase-display {
-                font-size: clamp(28px, 8vw, 10vh) !important;
-                margin: 0.5rem 0;
-            }
-            
-            body.fullscreen-mode .round-display {
-                font-size: clamp(16px, 4.5vw, 5vh) !important;
-                margin: 0;
-            }
+            body.fullscreen-mode .timer-display { font-size: clamp(60px, 28vw, 32vh) !important; }
+            body.fullscreen-mode .phase-display { font-size: clamp(28px, 8vw, 10vh) !important; margin: 0.5rem 0; }
+            body.fullscreen-mode .round-display { font-size: clamp(18px, 5vw, 6vh) !important; }
         }
         
         /* Landscape adjustments */
         @media (orientation: landscape) {
             body.fullscreen-mode .timer-container {
-                padding: 0.5rem; 
-                flex-direction: row; 
+                padding: 0 0 1rem 0; 
+                justify-content: space-between;
+                align-items: center;
+            }
+            body.fullscreen-mode .middle-layout-box {
+                flex-direction: row !important;
+                gap: 4rem;
                 justify-content: center;
                 align-items: center;
-                gap: 2.5rem; 
+                flex-grow: 1;
             }
-            
-            body.fullscreen-mode .timer-display {
-                font-size: clamp(60px, 25vw, 30vh) !important;
-                margin: 0;
-            }
-            
-            body.fullscreen-mode .phase-display {
-                font-size: clamp(24px, 6.5vw, 9vh) !important; 
-                margin: 0;
-                max-width: 45%; 
-                text-align: left;
-            }
-            
-            body.fullscreen-mode .round-display {
-                position: absolute;
-                bottom: 1.5rem; 
-                right: 1.5rem;
-                font-size: clamp(14px, 3vw, 4.5vh) !important; 
-                margin: 0;
-            }
+            body.fullscreen-mode .timer-display { font-size: clamp(60px, 25vw, 32vh) !important; }
+            body.fullscreen-mode .phase-display { font-size: clamp(24px, 6.5vw, 9vh) !important; max-width: 45%; text-align: left; }
+            body.fullscreen-mode .round-display { position: absolute; bottom: 1.5rem; right: 2.5rem; font-size: clamp(16px, 3.5vw, 5vh) !important; }
         }
         
         .exit-fullscreen-btn { 
             display: none; 
             position: fixed; 
-            top: 20px; 
-            right: 20px; 
+            top: 15px; 
+            right: 15px; 
             z-index: 10001; 
-            background: rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.5); 
             padding: 8px 16px; 
             border-radius: 8px; 
             font-weight: bold;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
             color: white;
             cursor: pointer;
             font-size: 14px;
@@ -176,6 +156,7 @@
 </head>
 <body class="bg-gray-950 text-white font-sans flex flex-col h-screen overflow-hidden">
 
+    <!-- Tab Navigation -->
     <div class="tab-navigation flex gap-2 p-3 bg-gray-900 border-b border-gray-800 shrink-0">
         <button onclick="switchTab('training')" class="tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500" data-tab="training">
             ⏳ Training Timer
@@ -185,8 +166,10 @@
         </button>
     </div>
 
+    <!-- Training Timer Tab -->
     <div id="training" class="tab-content active flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
+            <!-- Input Setup Section -->
             <div id="setup-section" class="bg-gray-900 p-3 rounded-xl border border-gray-800 max-h-[35vh] overflow-y-auto">
                 <h3 class="text-base font-black mb-2 text-red-400">Training Timer Setup</h3>
                 <div class="grid grid-cols-3 gap-2 mb-3">
@@ -209,25 +192,30 @@
                 </div>
             </div>
 
-            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative">
+            <!-- Timer Live Display -->
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative overflow-hidden">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
                 
-                <div class="text-center w-full pt-2 shrink-0">
-                    <span id="training-label-display" class="text-xs uppercase tracking-widest font-black text-red-500 bg-red-950/50 px-3 py-1 rounded-full border border-red-900/40">TRAINING</span>
+                <!-- MASSIVE TOP TOPIC HEADER BOX -->
+                <div id="training-topic-box" class="w-full text-center py-4 bg-red-950/40 border-b border-red-900/40 shrink-0 transition-colors duration-300">
+                    <span id="training-label-display" class="text-xl tracking-widest font-black text-red-400 block uppercase">TRAINING</span>
                 </div>
 
-                <div class="text-center w-full my-auto flex flex-col justify-center items-center gap-2">
-                    <div class="timer-display countdown-display text-red-400" id="training-display">05:00</div>
+                <!-- MIDDLE DISPLAY -->
+                <div class="middle-layout-box text-center w-full my-auto flex flex-col justify-center items-center gap-2 p-4">
+                    <div class="timer-display theme-training" id="training-display">05:00</div>
                     <div id="training-details-display" class="phase-display text-gray-200"></div>
                 </div>
 
-                <div class="text-center w-full pb-2 shrink-0">
+                <!-- BOTTOM DISPLAY -->
+                <div class="text-center w-full pb-4 shrink-0">
                     <div class="text-base font-bold text-gray-300 round-display">
-                        Round: <span id="training-round-display" class="text-red-400">1</span>/<span id="training-total-rounds">1</span>
+                        Round: <span id="training-round-display" class="text-red-400">1</span> / <span id="training-total-rounds">1</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Dashboard Controls -->
             <div class="control-buttons grid grid-cols-3 gap-2 shrink-0">
                 <button onclick="startTraining()" class="py-2 px-3 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-black rounded-lg text-sm transition active:scale-95">▶️ Start</button>
                 <button onclick="pauseTraining()" class="py-2 px-3 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-black rounded-lg text-sm transition active:scale-95">⏸️ Pause</button>
@@ -236,8 +224,10 @@
         </div>
     </div>
 
+    <!-- Interval Training Tab -->
     <div id="interval" class="tab-content flex-col flex-grow p-4 overflow-y-auto">
         <div class="flex flex-col gap-4 flex-grow">
+            <!-- Setup Section -->
             <div id="setup-section-interval" class="bg-gray-900 p-3 rounded-xl border border-gray-800 max-h-[40vh] overflow-y-auto">
                 <h3 class="text-base font-black mb-2 text-emerald-400">Interval Training Setup</h3>
                 <div class="grid grid-cols-3 gap-2 mb-3">
@@ -264,25 +254,30 @@
                 </div>
             </div>
 
-            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 p-6 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative">
+            <!-- Timer Display -->
+            <div class="timer-container bg-gradient-to-br from-gray-900 to-gray-950 rounded-xl border border-gray-800 flex-grow flex flex-col justify-between items-center relative overflow-hidden">
                 <button onclick="exitFullscreen()" class="exit-fullscreen-btn">✕ Exit</button>
                 
-                <div class="text-center w-full pt-2 shrink-0">
-                    <span id="interval-label-display" class="text-xs uppercase tracking-widest font-black text-emerald-400 bg-emerald-950/50 px-3 py-1 rounded-full border border-emerald-900/40">WORK PHASE</span>
+                <!-- MASSIVE TOP TOPIC HEADER BOX -->
+                <div id="interval-topic-box" class="w-full text-center py-4 bg-emerald-950/40 border-b border-emerald-900/40 shrink-0 transition-colors duration-300">
+                    <span id="interval-label-display" class="text-xl tracking-widest font-black text-emerald-400 block uppercase">WORK PHASE</span>
                 </div>
 
-                <div class="text-center w-full my-auto flex flex-col justify-center items-center gap-2">
-                    <div class="timer-display countdown-display text-emerald-400" id="interval-display">00:30</div>
+                <!-- MIDDLE DISPLAY -->
+                <div class="middle-layout-box text-center w-full my-auto flex flex-col justify-center items-center gap-2 p-4">
+                    <div class="timer-display theme-work" id="interval-display">00:30</div>
                     <div id="interval-details-display" class="phase-display text-emerald-200"></div>
                 </div>
 
-                <div class="text-center w-full pb-2 shrink-0">
+                <!-- BOTTOM DISPLAY -->
+                <div class="text-center w-full pb-4 shrink-0">
                     <div class="text-lg font-bold text-gray-300 round-display">
-                        Round: <span id="interval-round-display" class="text-emerald-400">1</span>/<span id="interval-total-rounds">5</span>
+                        Round: <span id="interval-round-display" class="text-emerald-400">1</span> / <span id="interval-total-rounds">5</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Control Buttons -->
             <div class="control-buttons grid grid-cols-3 gap-2 shrink-0">
                 <button onclick="startInterval()" class="py-2 px-3 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black rounded-lg text-sm transition active:scale-95">▶️ Start</button>
                 <button onclick="pauseInterval()" class="py-2 px-3 bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-black rounded-lg text-sm transition active:scale-95">⏸️ Pause</button>
@@ -291,74 +286,49 @@
         </div>
     </div>
 
+    <!-- Application Controller Logic -->
     <script>
-        // Audio Initialization Safeguard
         function getAudioCtx() {
-            if (!window.sharedAudioCtx) {
-                window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (window.sharedAudioCtx.state === 'suspended') {
-                window.sharedAudioCtx.resume();
-            }
+            if (!window.sharedAudioCtx) window.sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (window.sharedAudioCtx.state === 'suspended') window.sharedAudioCtx.resume();
             return window.sharedAudioCtx;
         }
 
-        // Context-aware Oscillator alerts 
         function playTrackBeep(isFinal) {
             try {
                 const audioCtx = getAudioCtx();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
+                oscillator.connect(gainNode); gainNode.connect(audioCtx.destination);
                 oscillator.type = 'square';
                 oscillator.frequency.setValueAtTime(isFinal ? 990 : 490, audioCtx.currentTime + 0.05);
-                
                 gainNode.gain.setValueAtTime(0, audioCtx.currentTime + 0.05);
                 gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.06);
                 gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime + (isFinal ? 0.8 : 0.4) - 0.01);
                 gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (isFinal ? 0.8 : 0.4));
-                
-                oscillator.start(audioCtx.currentTime + 0.05);
-                oscillator.stop(audioCtx.currentTime + (isFinal ? 0.8 : 0.4));
-                
-                oscillator.onended = () => {
-                    oscillator.disconnect();
-                    gainNode.disconnect();
-                };
-            } catch (e) {
-                console.error("Audio Engine Note Error: ", e);
-            }
+                oscillator.start(audioCtx.currentTime + 0.05); oscillator.stop(audioCtx.currentTime + (isFinal ? 0.8 : 0.4));
+            } catch (e) { console.error(e); }
         }
 
-        // Fullscreen Controls 
         function requestFullscreen(element) {
-            if (element.requestFullscreen) { element.requestFullscreen().catch(err => console.error(err)); }
-            else if (element.mozRequestFullScreen) { element.mozRequestFullScreen().catch(err => console.error(err)); }
-            else if (element.webkitRequestFullscreen) { element.webkitRequestFullscreen().catch(err => console.error(err)); }
-            else if (element.msRequestFullscreen) { element.msRequestFullscreen().catch(err => console.error(err)); }
+            if (element.requestFullscreen) element.requestFullscreen().catch(err => console.error(err));
+            else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen().catch(err => console.error(err));
             document.body.classList.add("fullscreen-mode");
         }
 
         function exitFullscreen() {
-            if (document.exitFullscreen) { document.exitFullscreen(); }
-            else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             document.body.classList.remove('fullscreen-mode');
         }
 
-        // Core Training Engine Implementation
+        // Training Module Engine
         let trainingInterval = null, trainingRunning = false, trainingRemaining = 0;
         let trainingCurrentRound = 1, trainingTotalRounds = 1;
         let trainingCountdownPhase = false, trainingCountdownValue = 5;
 
         function getTrainingSetupTime() {
-            const mins = parseInt(document.getElementById('training-minutes').value) || 0;
-            const secs = parseInt(document.getElementById('training-seconds').value) || 0;
-            return mins * 60 + secs;
+            return (parseInt(document.getElementById('training-minutes').value) || 0) * 60 + (parseInt(document.getElementById('training-seconds').value) || 0);
         }
 
         function startTraining() {
@@ -366,12 +336,9 @@
             if (trainingRemaining === 0) {
                 trainingRemaining = getTrainingSetupTime();
                 trainingTotalRounds = parseInt(document.getElementById('training-rounds').value) || 1;
-                trainingCurrentRound = 1;
-                trainingCountdownPhase = true;
-                trainingCountdownValue = 5;
+                trainingCurrentRound = 1; trainingCountdownPhase = true; trainingCountdownValue = 5;
                 requestFullscreen(document.body);
             }
-            
             trainingRunning = true;
             trainingInterval = setInterval(() => {
                 if (trainingCountdownPhase) {
@@ -379,12 +346,12 @@
                         playTrackBeep(false);
                         document.getElementById('training-display').textContent = trainingCountdownValue;
                         document.getElementById('training-details-display').textContent = 'Get Ready...';
-                        document.getElementById('training-label-display').textContent = 'PREPARATION';
+                        
+                        // Switch Theme to Prep (Amber)
+                        setWidgetTheme('training', 'prep', 'PREPARATION');
                         trainingCountdownValue--;
                     } else {
-                        playTrackBeep(true);
-                        trainingCountdownPhase = false;
-                        trainingCountdownValue = -1;
+                        playTrackBeep(true); trainingCountdownPhase = false; trainingCountdownValue = -1;
                         updateTrainingDisplay();
                     }
                 } else {
@@ -394,14 +361,10 @@
                     if (trainingRemaining === 0) {
                         playTrackBeep(true);
                         if (trainingCurrentRound < trainingTotalRounds) {
-                            trainingCurrentRound++;
-                            trainingCountdownPhase = true;
-                            trainingCountdownValue = 5;
+                            trainingCurrentRound++; trainingCountdownPhase = true; trainingCountdownValue = 5;
                             trainingRemaining = getTrainingSetupTime();
                         } else {
-                            clearInterval(trainingInterval);
-                            trainingRunning = false;
-                            exitFullscreen();
+                            clearInterval(trainingInterval); trainingRunning = false; exitFullscreen();
                         }
                     }
                 }
@@ -411,43 +374,36 @@
         function pauseTraining() { trainingRunning = false; clearInterval(trainingInterval); }
         function resetTraining() {
             trainingRunning = false; clearInterval(trainingInterval);
-            trainingRemaining = 0; trainingCurrentRound = 1;
-            trainingCountdownPhase = false; trainingCountdownValue = 5;
+            trainingRemaining = 0; trainingCurrentRound = 1; trainingCountdownPhase = false; trainingCountdownValue = 5;
             updateTrainingDisplay(); exitFullscreen();
         }
 
         function updateTrainingDisplay() {
             if (!trainingRunning && trainingRemaining === 0) {
                 const totalSecs = getTrainingSetupTime();
-                const mins = Math.floor(totalSecs / 60);
-                const secs = totalSecs % 60;
-                document.getElementById('training-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('training-display').textContent = `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
                 document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
                 document.getElementById('training-round-display').textContent = '1';
                 document.getElementById('training-total-rounds').textContent = parseInt(document.getElementById('training-rounds').value) || 1;
-                document.getElementById('training-label-display').textContent = 'TRAINING';
+                setWidgetTheme('training', 'training', 'TRAINING');
                 return;
             }
 
             if (trainingCountdownPhase && trainingCountdownValue > 0) {
                 document.getElementById('training-display').textContent = trainingCountdownValue;
                 document.getElementById('training-details-display').textContent = 'Get Ready...';
-                document.getElementById('training-label-display').textContent = 'PREPARATION';
-            } else if (trainingCountdownValue === 0) {
-                document.getElementById('training-display').textContent = 'GO!';
-                document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
-                document.getElementById('training-label-display').textContent = 'TRAINING';
+                setWidgetTheme('training', 'prep', 'PREPARATION');
             } else {
-                const mins = Math.floor(trainingRemaining / 60), secs = trainingRemaining % 60;
-                document.getElementById('training-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                const displaySecs = trainingCountdownValue === 0 ? 'GO!' : `${String(Math.floor(trainingRemaining / 60)).padStart(2, '0')}:${String(trainingRemaining % 60).padStart(2, '0')}`;
+                document.getElementById('training-display').textContent = displaySecs;
                 document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
-                document.getElementById('training-label-display').textContent = 'TRAINING';
+                setWidgetTheme('training', 'training', 'TRAINING');
             }
             document.getElementById('training-round-display').textContent = trainingCurrentRound;
             document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
         }
 
-        // Core Interval Loop Implementation
+        // Interval Loop Engine
         let intervalTimer = null, intervalRunning = false, intervalRemaining = 0;
         let intervalCurrentRound = 1, intervalTotalRounds = 1;
         let intervalIsWorkPhase = true, intervalWorkTime = 30, intervalRecoveryTime = 30;
@@ -471,11 +427,10 @@
                         playTrackBeep(false);
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
                         document.getElementById('interval-details-display').textContent = 'Get Ready...';
-                        document.getElementById('interval-label-display').textContent = 'PREPARATION';
+                        setWidgetTheme('interval', 'prep', 'PREPARATION');
                         intervalStartCountdown--;
                     } else {
-                        playTrackBeep(true);
-                        intervalInStartPhase = false;
+                        playTrackBeep(true); intervalInStartPhase = false;
                         updateIntervalDisplay();
                     }
                 } else {
@@ -485,17 +440,12 @@
                     if (intervalRemaining === 0) {
                         playTrackBeep(true);
                         if (intervalIsWorkPhase) {
-                            intervalIsWorkPhase = false;
-                            intervalRemaining = intervalRecoveryTime;
+                            intervalIsWorkPhase = false; intervalRemaining = intervalRecoveryTime;
                         } else {
                             if (intervalCurrentRound < intervalTotalRounds) {
-                                intervalCurrentRound++;
-                                intervalIsWorkPhase = true;
-                                intervalRemaining = intervalWorkTime;
+                                intervalCurrentRound++; intervalIsWorkPhase = true; intervalRemaining = intervalWorkTime;
                             } else {
-                                clearInterval(intervalTimer);
-                                intervalRunning = false;
-                                exitFullscreen();
+                                clearInterval(intervalTimer); intervalRunning = false; exitFullscreen();
                             }
                         }
                     }
@@ -506,58 +456,87 @@
         function pauseInterval() { intervalRunning = false; clearInterval(intervalTimer); }
         function resetInterval() {
             intervalRunning = false; clearInterval(intervalTimer);
-            intervalRemaining = 0; intervalCurrentRound = 1;
-            intervalIsWorkPhase = true; intervalInStartPhase = false;
+            intervalRemaining = 0; intervalCurrentRound = 1; intervalIsWorkPhase = true; intervalInStartPhase = false;
             updateIntervalDisplay(); exitFullscreen();
         }
 
         function updateIntervalDisplay() {
             if (!intervalRunning && intervalRemaining === 0) {
                 const setupWork = parseInt(document.getElementById('interval-work-time').value) || 0;
-                const mins = Math.floor(setupWork / 60), secs = setupWork % 60;
-                document.getElementById('interval-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('interval-display').textContent = `${String(Math.floor(setupWork / 60)).padStart(2, '0')}:${String(setupWork % 60).padStart(2, '0')}`;
                 document.getElementById('interval-details-display').textContent = document.getElementById('interval-work-details').value;
                 document.getElementById('interval-round-display').textContent = '1';
                 document.getElementById('interval-total-rounds').textContent = parseInt(document.getElementById('interval-rounds').value) || 5;
-                document.getElementById('interval-label-display').textContent = 'WORK PHASE';
+                setWidgetTheme('interval', 'work', 'WORK PHASE');
                 return;
             }
 
-            const mins = Math.floor(intervalRemaining / 60), secs = intervalRemaining % 60;
-            document.getElementById('interval-display').textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            const details = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
-            document.getElementById('interval-details-display').textContent = details;
+            document.getElementById('interval-display').textContent = `${String(Math.floor(intervalRemaining / 60)).padStart(2, '0')}:${String(intervalRemaining % 60).padStart(2, '0')}`;
+            document.getElementById('interval-details-display').textContent = intervalIsWorkPhase ? document.getElementById('interval-work-details').value : document.getElementById('interval-recovery-details').value;
             
             if (intervalInStartPhase) {
-                document.getElementById('interval-label-display').textContent = 'PREPARATION';
+                setWidgetTheme('interval', 'prep', 'PREPARATION');
             } else {
-                document.getElementById('interval-label-display').textContent = intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE';
+                setWidgetTheme('interval', intervalIsWorkPhase ? 'work' : 'recovery', intervalIsWorkPhase ? 'WORK PHASE' : 'RECOVERY PHASE');
             }
             
             document.getElementById('interval-round-display').textContent = intervalCurrentRound;
             document.getElementById('interval-total-rounds').textContent = intervalTotalRounds;
         }
 
-        // Tab Selector Controller
+        // Shared Presentation Framework Manager
+        function setWidgetTheme(type, state, headingText) {
+            const topicBox = document.getElementById(`${type}-topic-box`);
+            const labelNode = document.getElementById(`${type}-label-display`);
+            const digitsNode = document.getElementById(`${type}-display`);
+            const roundNum = document.getElementById(`${type}-round-display`);
+            
+            labelNode.textContent = headingText;
+            
+            // Clean active display node classes
+            digitsNode.className = "timer-display";
+            if(roundNum) roundNum.className = "";
+
+            // Apply phase specific themes
+            if (state === 'work') {
+                topicBox.className = "w-full text-center py-4 bg-emerald-950/60 border-b border-emerald-800/60 shrink-0 transition-colors duration-300";
+                labelNode.className = "text-2xl tracking-widest font-black text-emerald-400 block uppercase";
+                digitsNode.classList.add("theme-work");
+                if(roundNum) roundNum.classList.add("text-emerald-400");
+            } else if (state === 'recovery') {
+                topicBox.className = "w-full text-center py-4 bg-cyan-950/60 border-b border-cyan-800/60 shrink-0 transition-colors duration-300";
+                labelNode.className = "text-2xl tracking-widest font-black text-cyan-400 block uppercase";
+                digitsNode.classList.add("theme-recovery");
+                if(roundNum) roundNum.classList.add("text-cyan-400");
+            } else if (state === 'prep') {
+                topicBox.className = "w-full text-center py-4 bg-amber-950/60 border-b border-amber-800/60 shrink-0 transition-colors duration-300";
+                labelNode.className = "text-2xl tracking-widest font-black text-amber-400 block uppercase";
+                digitsNode.classList.add("theme-prep");
+                if(roundNum) roundNum.classList.add("text-amber-400");
+            } else if (state === 'training') {
+                topicBox.className = "w-full text-center py-4 bg-red-950/60 border-b border-red-800/60 shrink-0 transition-colors duration-300";
+                labelNode.className = "text-2xl tracking-widest font-black text-red-400 block uppercase";
+                digitsNode.classList.add("theme-training");
+                if(roundNum) roundNum.classList.add("text-red-400");
+            }
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-red-600', 'hover:bg-red-500', 'bg-emerald-600', 'hover:bg-emerald-500');
-                btn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                btn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-gray-700 hover:bg-gray-600";
             });
             document.getElementById(tabName).classList.add('active');
             const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-            activeBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-            if (tabName === 'training') { activeBtn.classList.add('bg-red-600', 'hover:bg-red-500'); } 
-            else { activeBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500'); }
+            if (tabName === 'training') { activeBtn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-red-600 hover:bg-red-500"; } 
+            else { activeBtn.className = "tab-btn flex-1 py-2 px-3 rounded-lg font-bold text-sm transition active:scale-95 bg-emerald-600 hover:bg-emerald-500"; }
         }
 
-        // ===== INSTANT UPDATE EVENT LISTENERS =====
+        // Configuration Event Binding Hookups
         document.getElementById('training-minutes').addEventListener('input', updateTrainingDisplay);
         document.getElementById('training-seconds').addEventListener('input', updateTrainingDisplay);
         document.getElementById('training-rounds').addEventListener('input', updateTrainingDisplay);
         document.getElementById('training-details').addEventListener('input', updateTrainingDisplay);
-
         document.getElementById('interval-work-time').addEventListener('input', updateIntervalDisplay);
         document.getElementById('interval-recovery-time').addEventListener('input', updateIntervalDisplay);
         document.getElementById('interval-rounds').addEventListener('input', updateIntervalDisplay);
@@ -566,9 +545,8 @@
             if (!intervalRunning && intervalRemaining === 0) updateIntervalDisplay();
         });
 
-        // Initialize display baselines on boot
-        updateTrainingDisplay();
-        updateIntervalDisplay();
+        // Setup Layout Baselines on Bootstrap
+        updateTrainingDisplay(); updateIntervalDisplay();
     </script>
 </body>
 </html>
