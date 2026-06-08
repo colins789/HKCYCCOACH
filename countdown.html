@@ -46,7 +46,7 @@
             display: none !important; 
         }
         
-        body.fullscreen-mode .timer-container { 
+        body.fullscreen-mode .timer-container {
             width: 100vw;
             height: 100dvh;
             position: fixed;
@@ -63,7 +63,7 @@
             background: linear-gradient(135deg, #030712 0%, #0f0f1e 100%);
         }
         
-        body.fullscreen-mode .timer-display { 
+        body.fullscreen-mode .timer-display {
             font-size: clamp(48px, 35vw, 45vh) !important;
             line-height: 1;
             color: #10b981;
@@ -121,21 +121,24 @@
         @media (orientation: landscape) {
             body.fullscreen-mode .timer-container {
                 padding: 1rem 2rem;
-                flex-direction: row;
-                gap: 1.5rem;
+                flex-direction: column;
+                gap: 1rem;
                 align-items: center;
+                justify-content: center;
             }
             
             body.fullscreen-mode .timer-display {
-                font-size: clamp(48px, 30vw, 38vh) !important;
+                font-size: clamp(50px, 32vw, 35vh) !important;
                 flex-shrink: 0;
+                margin: 0;
             }
             
             body.fullscreen-mode .phase-display {
-                font-size: clamp(18px, 7vw, 9vh) !important;
-                margin: 0;
-                flex: 1;
-                text-align: left;
+                font-size: clamp(16px, 6vw, 8vh) !important;
+                margin: 0.5rem 0;
+                flex: none;
+                text-align: center;
+                max-width: 85%;
             }
             
             body.fullscreen-mode .round-display {
@@ -340,11 +343,29 @@
         }
 
         // ===== FULLSCREEN HELPERS =====
-        function enterFullscreen() {
+        function requestFullscreen(element) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) { /* Firefox */
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) { /* IE/Edge */
+                element.msRequestFullscreen();
+            }
             document.body.classList.add('fullscreen-mode');
         }
 
         function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE/Edge */
+                document.msExitFullscreen();
+            }
             document.body.classList.remove('fullscreen-mode');
         }
 
@@ -368,7 +389,7 @@
                 trainingCurrentRound = 1;
                 trainingCountdownPhase = true;
                 trainingCountdownValue = 5;
-                enterFullscreen();
+                requestFullscreen(document.documentElement); // Request fullscreen for the whole document
             }
             
             trainingRunning = true;
@@ -377,6 +398,7 @@
                     if (trainingCountdownValue > 0) {
                         playTrackBeep(false);
                         document.getElementById('training-display').textContent = trainingCountdownValue;
+                        document.getElementById('training-details-display').textContent = 'Get Ready...';
                         trainingCountdownValue--;
                     } else {
                         playTrackBeep(true);
@@ -427,18 +449,20 @@
         function updateTrainingDisplay() {
             if (trainingCountdownPhase && trainingCountdownValue > 0) {
                 document.getElementById('training-display').textContent = trainingCountdownValue;
+                document.getElementById('training-details-display').textContent = 'Get Ready...';
             } else if (trainingCountdownValue === 0) {
                 document.getElementById('training-display').textContent = 'GO!';
+                document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
             } else {
                 const mins = Math.floor(trainingRemaining / 60);
                 const secs = trainingRemaining % 60;
                 document.getElementById('training-display').textContent = 
                     `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
             }
             
             document.getElementById('training-round-display').textContent = trainingCurrentRound;
             document.getElementById('training-total-rounds').textContent = trainingTotalRounds;
-            document.getElementById('training-details-display').textContent = document.getElementById('training-details').value;
         }
 
         // ===== INTERVAL TRAINING =====
@@ -465,7 +489,7 @@
                 intervalRemaining = intervalWorkTime;
                 intervalStartCountdown = 5;
                 intervalInStartPhase = true;
-                enterFullscreen();
+                requestFullscreen(document.documentElement); // Request fullscreen for the whole document
             }
             
             intervalRunning = true;
@@ -474,6 +498,7 @@
                     if (intervalStartCountdown > 0) {
                         playTrackBeep(false);
                         document.getElementById('interval-display').textContent = intervalStartCountdown;
+                        document.getElementById('interval-details-display').textContent = 'Get Ready...';
                         intervalStartCountdown--;
                     } else {
                         playTrackBeep(true);
