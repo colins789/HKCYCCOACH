@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" class="w-full h-full m-0 p-0 overflow-hidden selection:bg-cyan-500/30">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -8,88 +8,68 @@
     <title>香港單車教練 Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Premium Native Modal Transition */
-        .modal-active { display: flex !important; z-index: 9999 !important; animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-active { display: flex !important; z-index: 9999 !important; animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
         
-        /* Modern Native Date Input Styling */
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1) sepia(1) saturate(5) hue-rotate(160deg);
+            filter: invert(1);
             cursor: pointer;
-            transform: scale(1.2);
+            transform: scale(1.4);
         }
-        
-        /* Premium Minimalist Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 99px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(6, 182, 212, 0.3); }
-
-        /* Lock Body Viewport & Eliminate Rubberbanding Elastic Bounces */
-        html, body {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            overflow: hidden;
-            -webkit-overscroll-behavior: none;
-            overscroll-behavior: none;
-            background-color: #030712;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-white font-sans w-full h-[100dvh] flex flex-col antialiased select-none p-4 sm:p-5 md:p-6 lg:p-8 pt-[calc(24px+env(safe-area-inset-top))] pb-[calc(16px+env(safe-area-inset-bottom))] pl-[calc(16px+env(safe-area-inset-left))] pr-[calc(16px+env(safe-area-inset-right))]">
+<body class="bg-gray-950 text-white font-sans p-3 sm:p-4 md:p-6 pt-[max(12px,env(safe-area-inset-top))] min-h-screen flex flex-col overflow-x-hidden antialiased select-none">
 
-    <!-- Global App Header -->
-    <header class="mb-5 shrink-0 flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">HK Cycling Coach Hub</h1>
-            <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase mt-0.5">Hong Kong Sports Performance Engineering</p>
-        </div>
-        <span class="text-[10px] font-mono font-black tracking-widest text-cyan-400 bg-cyan-950/30 px-3 py-1.5 rounded-xl shadow-inner border border-cyan-500/10 uppercase hidden sm:inline-block animate-pulse">Live Sync Active</span>
+    <header class="mb-5 border-b border-gray-800 pb-3 shrink-0">
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">HK Cycling Coach Hub</h1>
     </header>
 
-    <!-- Main Content Stream Area -->
-    <div class="flex flex-col gap-4 md:gap-5 flex-grow overflow-y-auto custom-scroll pr-1 pb-6">
+    <div class="flex flex-col gap-5 md:gap-6 flex-grow pb-4 pr-1 no-scrollbar">
 
-        <!--教練專用工具箱-->
-        <div class="bg-gray-900/40 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xl shadow-black/40 shrink-0 w-full border border-white/[0.03]">
-            <div class="text-left mb-4">
-                <span class="bg-red-500/10 text-red-400 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border border-red-500/10">COACH TOOLS</span>
-                <h2 class="text-lg md:text-xl font-black text-white mt-1">教練專用工具箱</h2>
+        <!-- 教練專用工具箱 -->
+        <div class="bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-800 shadow-2xl shrink-0 w-full">
+            <div class="text-left mb-4 border-b border-gray-800 pb-2">
+                <span class="bg-red-500/20 text-red-400 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">COACH TOOLS</span>
+                <h2 class="text-xl font-black text-gray-100 mt-1.5">教練專用工具箱</h2>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <button onclick="openTool('timer-modal')" class="w-full py-4 px-5 bg-gradient-to-b from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-3.5">
-                    <span class="text-2xl">⏱️</span>
-                    <span class="font-black text-base tracking-wide">計時器</span>
+            <!-- Rearranged Function Grid Order -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <!-- 1. Lap Timer -->
+                <button onclick="openTool('timer-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-blue-400/20">
+                    <span class="text-3xl">⏱️</span>
+                    <span class="font-black text-xl tracking-wide">計時器</span>
                 </button>
-                <button onclick="openTool('tt-modal')" class="w-full py-4 px-5 bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-3.5">
-                    <span class="text-2xl">🚴</span>
-                    <span class="font-black text-base tracking-wide">個人計時</span>
+                <!-- 2. Training Timer -->
+                <button onclick="openTool('countdown-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-red-400/20">
+                    <span class="text-3xl">⏳</span>
+                    <span class="font-black text-xl tracking-wide">Training Timer</span>
                 </button>
-                <button onclick="openTool('omnium-modal')" class="w-full py-4 px-5 bg-gradient-to-b from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-3.5">
-                    <span class="text-2xl">📊</span>
-                    <span class="font-black text-base tracking-wide">全能計算</span>
+                <!-- 3. TT Timer -->
+                <button onclick="openTool('tt-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-emerald-400/20">
+                    <span class="text-3xl">🚴</span>
+                    <span class="font-black text-xl tracking-wide">個人計時</span>
                 </button>
-                <button onclick="openTool('countdown-modal')" class="w-full py-4 px-5 bg-gradient-to-b from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white rounded-xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-3.5">
-                    <span class="text-2xl">⏳</span>
-                    <span class="font-black text-base tracking-wide">Training Timer</span>
+                <!-- 4. Omnium Calculator -->
+                <button onclick="openTool('omnium-modal')" class="w-full py-5 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-purple-400/20">
+                    <span class="text-3xl">📊</span>
+                    <span class="font-black text-xl tracking-wide">全能計算</span>
                 </button>
             </div>
-            <div class="mt-3">
-                <button onclick="openGoogleDrive()" class="w-full py-3.5 px-5 bg-gray-950/40 hover:bg-gray-950/80 text-gray-300 hover:text-white rounded-xl transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-2.5 border border-white/[0.04] shadow-inner">
-                    <span class="text-xl">📁</span>
-                    <span class="font-bold text-sm tracking-wide">Google Drive 排程表</span>
+            <div class="mt-3.5">
+                <button onclick="openGoogleDrive()" class="w-full py-5 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white rounded-2xl shadow-lg transition transform active:scale-95 cursor-pointer flex items-center justify-center gap-4 border border-blue-400/20">
+                    <span class="text-3xl">📁</span>
+                    <span class="font-black text-xl tracking-wide">Google Drive 排程表</span>
                 </button>
             </div>
         </div>
 
-        <!-- 日期選擇模組 -->
-        <div class="flex flex-col sm:flex-row items-stretch gap-2.5 bg-gray-900/40 backdrop-blur-md p-3 rounded-2xl shadow-xl w-full shrink-0 border border-white/[0.02]">
-            <div class="flex flex-col bg-gray-950/80 p-2 rounded-xl min-w-[90px] flex-grow sm:flex-grow-0 shadow-inner">
-                <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-0.5 pl-1">📅 年份</span>
-                <select id="schedule-year-select" onchange="onYearDropdownChange()" class="bg-transparent border-0 font-mono font-black text-base text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-8 rounded-lg appearance-none">
+        <!-- 日期選擇區 -->
+        <div class="flex flex-col sm:flex-row items-stretch gap-3 bg-gray-900 p-3 rounded-2xl border border-gray-800 shadow-2xl w-full">
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[100px] flex-grow sm:flex-grow-0">
+                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 pl-1">📅 年份</span>
+                <select id="schedule-year-select" onchange="onYearDropdownChange()" class="bg-transparent border-0 font-mono font-black text-lg md:text-xl text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-9 bg-gray-950 rounded-lg">
                     <option value="2024" class="bg-gray-950 text-white">2024</option>
                     <option value="2025" class="bg-gray-950 text-white">2025</option>
                     <option value="2026" class="bg-gray-950 text-white">2026</option>
@@ -98,126 +78,118 @@
                 </select>
             </div>
 
-            <div class="flex flex-col bg-gray-950/80 p-2 rounded-xl min-w-[150px] flex-grow shadow-inner">
-                <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-0.5 pl-1">📅 選擇日期</span>
-                <input type="date" id="schedule-date" onchange="onDateInputChange()" class="bg-transparent border-0 font-mono font-black text-base text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-8">
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[160px] flex-grow">
+                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 pl-1">📅 選擇日期</span>
+                <input type="date" id="schedule-date" onchange="onDateInputChange()" class="bg-transparent border-0 font-mono font-black text-lg md:text-xl text-cyan-400 focus:outline-none cursor-pointer w-full text-center p-0 h-9">
             </div>
 
-            <div class="flex flex-col bg-gray-950/80 p-2 rounded-xl min-w-[110px] justify-center items-center shadow-inner">
-                <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-0.5 text-center w-full">🗓️ 星期</span>
-                <div id="header-weekday-display" class="font-black text-base text-amber-400 h-8 flex items-center justify-center tracking-wide">---</div>
+            <div class="flex flex-col bg-gray-950 p-2.5 rounded-xl border border-gray-800 min-w-[120px] justify-center items-center">
+                <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 text-center w-full">🗓️ 星期</span>
+                <div id="header-weekday-display" class="font-black text-lg md:text-xl text-amber-400 h-9 flex items-center justify-center tracking-wide">---</div>
             </div>
 
-            <button onclick="resetToToday()" class="bg-gray-800 hover:bg-gray-700 text-white font-black text-sm px-5 rounded-xl transition cursor-pointer whitespace-nowrap active:scale-95 flex items-center justify-center min-h-[46px] sm:min-h-0 shadow-md">今日</button>
+            <button onclick="resetToToday()" class="bg-gray-800 hover:bg-gray-750 active:bg-gray-700 text-white font-black text-base px-6 rounded-xl border border-gray-700 transition cursor-pointer whitespace-nowrap active:scale-95 flex items-center justify-center min-h-[50px] sm:min-h-0">今日</button>
         </div>
 
-        <!-- 訓練內容面板 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="bg-gray-900/40 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xl flex flex-col overflow-hidden border border-white/[0.02]">
-                <h2 class="text-base font-black mb-3 text-cyan-400 flex items-center gap-2 tracking-wide uppercase pb-2 shrink-0">
-                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+        <!-- 訓練列表顯示區 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col overflow-hidden">
+                <h2 class="text-lg sm:text-xl font-black mb-3 sm:mb-4 text-cyan-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2.5 shrink-0">
+                    <span class="w-3 h-3 rounded-full bg-cyan-500 animate-pulse"></span>
                     <span id="youth-title-date">中長青訓 項目</span>
                 </h2>
-                <div id="youth-schedule-list" class="space-y-4">
-                    <p class="text-gray-600 italic text-xs animate-pulse">Loading schedule metrics...</p>
+                <div id="youth-schedule-list" class="space-y-4 pr-1 no-scrollbar">
+                    <p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>
                 </div>
             </div>
 
-            <div class="bg-gray-900/40 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xl flex flex-col overflow-hidden border border-white/[0.02]">
-                <h2 class="text-base font-black mb-3 text-amber-400 flex items-center gap-2 tracking-wide uppercase pb-2 shrink-0">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <div class="bg-gray-900 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-gray-800 shadow-xl flex flex-col overflow-hidden">
+                <h2 class="text-lg sm:text-xl font-black mb-3 sm:mb-4 text-amber-400 flex items-center gap-2 tracking-wide uppercase border-b border-gray-800 pb-2.5 shrink-0">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
                     <span id="stars-title-date">明日之星 項目</span>
                 </h2>
-                <div id="stars-schedule-list" class="space-y-4">
-                    <p class="text-gray-600 italic text-xs animate-pulse">Loading schedule metrics...</p>
+                <div id="stars-schedule-list" class="space-y-4 pr-1 no-scrollbar">
+                    <p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>
                 </div>
             </div>
         </div>
 
-        <!-- 教練速查面板 -->
-        <div class="bg-gray-900/40 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-2xl flex flex-col shrink-0 border border-white/[0.02]">
-            <div class="text-left mb-3 shrink-0">
-                <span class="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-widest border border-cyan-500/10">Schedule Search</span>
-                <h2 class="text-sm sm:text-base font-bold text-gray-200 mt-0.5">教練月份速查</h2>
+        <!-- 教練月份速查 -->
+        <div class="bg-gray-900 p-4 sm:p-5 rounded-2xl border border-gray-800 shadow-2xl flex flex-col shrink-0">
+            <div class="text-left mb-3 border-b border-gray-800 pb-2 shrink-0 flex items-center justify-between">
+                <div>
+                    <span class="bg-cyan-500/10 text-cyan-400 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Schedule Search</span>
+                    <h2 class="text-base font-bold text-gray-200 mt-0.5">教練月份速查</h2>
+                </div>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 shrink-0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 shrink-0">
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">選擇月份</label>
-                    <select id="month-dropdown-select" onchange="manageCoachSearchFlow('init')" class="w-full bg-gray-950/80 border border-transparent rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-cyan-500/40 transition-colors cursor-pointer h-11 shadow-inner appearance-none">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">選擇月份</label>
+                    <select id="month-dropdown-select" onchange="manageCoachSearchFlow('init')" class="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer h-12">
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">選擇教練</label>
-                    <select id="coach-dropdown-select" onchange="manageCoachSearchFlow('render')" class="w-full bg-gray-950/80 border border-transparent rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-cyan-500/40 transition-colors cursor-pointer h-11 shadow-inner disabled:opacity-40 appearance-none" disabled>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">選擇教練</label>
+                    <select id="coach-dropdown-select" onchange="manageCoachSearchFlow('render')" class="w-full bg-gray-950 border border-gray-700 rounded-xl px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer h-12" disabled>
                         <option value="">-- 請先選擇月份 --</option>
                     </select>
                 </div>
             </div>
 
-            <div id="coach-search-results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
-                <p class="text-gray-600 italic text-center py-4 col-span-full">請依序選取月份與教練...</p>
+            <div id="coach-search-results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pr-1 text-xs no-scrollbar">
+                <p class="text-gray-500 italic text-center py-4 col-span-full">請依序選取月份與教練...</p>
             </div>
         </div>
 
     </div>
 
-    <!-- Background Preserving Tool Modals -->
-    
-    <!-- 計時器 -->
-    <div id="timer-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none animate-fadeIn">
-        <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-3.5 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.03] pt-[calc(16px+env(safe-area-inset-top))] shadow-lg shadow-black/80">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-gray-300">高級跑表計時工具</span>
-            </div>
-            <button onclick="closeTool('timer-modal')" class="w-12 h-12 flex items-center justify-center text-white bg-red-600 hover:bg-red-500 active:scale-90 rounded-full transition shadow-lg shadow-red-950/80 border border-red-500/20 cursor-pointer font-black text-lg">✕</button>
+    <!-- Modals (Ultra-Thin Header Bars) -->
+
+    <!-- 計時器 (Lap Timer) -->
+    <div id="timer-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none">
+        <div class="shrink-0 flex items-center justify-between bg-gray-900 border-b border-gray-800 px-3 py-1.5 pt-[calc(max(6px,env(safe-area-inset-top)))]">
+            <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>計時工具</span>
+            <button onclick="closeTool('timer-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./timer.html" class="w-full h-full border-none bg-transparent pt-[calc(80px+env(safe-area-inset-top))]"></iframe>
+        <iframe src="./timer.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
-    <!-- 個人計時 -->
-    <div id="tt-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none animate-fadeIn">
-        <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-3.5 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.03] pt-[calc(16px+env(safe-area-inset-top))] shadow-lg shadow-black/80">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-gray-300">Cycling Time Trial Module</span>
-            </div>
-            <button onclick="closeTool('tt-modal')" class="w-12 h-12 flex items-center justify-center text-white bg-red-600 hover:bg-red-500 active:scale-90 rounded-full transition shadow-lg shadow-red-950/80 border border-red-500/20 cursor-pointer font-black text-lg">✕</button>
+    <!-- 個人計時 (TT Timer) -->
+    <div id="tt-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none">
+        <div class="shrink-0 flex items-center justify-between bg-gray-900 border-b border-gray-800 px-3 py-1.5 pt-[calc(max(6px,env(safe-area-inset-top)))]">
+            <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>個人計時</span>
+            <button onclick="closeTool('tt-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./tt.html" class="w-full h-full border-none bg-transparent pt-[calc(80px+env(safe-area-inset-top))]"></iframe>
+        <iframe src="./tt.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
-    <!-- 全能計算 -->
-    <div id="omnium-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none animate-fadeIn">
-        <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-3.5 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.03] pt-[calc(16px+env(safe-area-inset-top))] shadow-lg shadow-black/80">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-gray-300">場地賽全能項目積分計算</span>
-            </div>
-            <button onclick="closeTool('omnium-modal')" class="w-12 h-12 flex items-center justify-center text-white bg-red-600 hover:bg-red-500 active:scale-90 rounded-full transition shadow-lg shadow-red-950/80 border border-red-500/20 cursor-pointer font-black text-lg">✕</button>
+    <!-- 全能計算 (Omnium Calculator) -->
+    <div id="omnium-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none">
+        <div class="shrink-0 flex items-center justify-between bg-gray-900 border-b border-gray-800 px-3 py-1.5 pt-[calc(max(6px,env(safe-area-inset-top)))]">
+            <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>全能計算</span>
+            <button onclick="closeTool('omnium-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./omnium.html" class="w-full h-full border-none bg-transparent pt-[calc(80px+env(safe-area-inset-top))]"></iframe>
+        <iframe src="./omnium.html" class="w-full h-full border-none bg-transparent"></iframe>
     </div>
 
     <!-- Training Timer -->
-    <div id="countdown-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none animate-fadeIn">
-        <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-3.5 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.03] pt-[calc(16px+env(safe-area-inset-top))] shadow-lg shadow-black/80">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-gray-300">間歇及倒數排程計時器</span>
-            </div>
-            <button onclick="closeTool('countdown-modal')" class="w-12 h-12 flex items-center justify-center text-white bg-red-600 hover:bg-red-500 active:scale-90 rounded-full transition shadow-lg shadow-red-950/80 border border-red-500/20 cursor-pointer font-black text-lg">✕</button>
+    <div id="countdown-modal" class="hidden fixed inset-0 bg-black flex-col z-50 overscroll-none">
+        <div class="shrink-0 flex items-center justify-between bg-gray-900 border-b border-gray-800 px-3 py-1.5 pt-[calc(max(6px,env(safe-area-inset-top)))]">
+            <span class="text-[11px] font-bold text-gray-400 font-mono flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Training Timer</span>
+            <button onclick="closeTool('countdown-modal')" class="text-white text-xs font-bold bg-red-600 hover:bg-red-500 px-3 py-1 rounded cursor-pointer transition active:scale-95">✕ 關閉</button>
         </div>
-        <iframe src="./countdown.html" class="w-full h-full border-none bg-transparent pt-[calc(80px+env(safe-area-inset-top))]" allowfullscreen="true" allow="fullscreen"></iframe>
+        <iframe src="./countdown.html" class="w-full h-full border-none bg-transparent" allowfullscreen="true" allow="fullscreen"></iframe>
     </div>
 
     <script>
-        /* FIXED: Opening tools now preserves live execution state completely */
         function openTool(id) { 
             const targetModal = document.getElementById(id);
             if (targetModal) {
                 targetModal.classList.add('modal-active'); 
+                document.body.classList.add('overflow-hidden');
+                const iframe = targetModal.querySelector('iframe');
+                if (iframe && iframe.src) { iframe.src = iframe.src; }
             }
         }
         
@@ -225,6 +197,7 @@
             const targetModal = document.getElementById(id);
             if (targetModal) {
                 targetModal.classList.remove('modal-active'); 
+                document.body.classList.remove('overflow-hidden');
             }
         }
 
@@ -294,11 +267,7 @@
                 yearSelect.value = parts[0];
             }
             fetchSchedule();
-            
-            const scrollingContentArea = document.querySelector('.custom-scroll');
-            if(scrollingContentArea) {
-                scrollingContentArea.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function resetToToday() {
@@ -350,7 +319,7 @@
             const selectedYearStr = getSelectedYear();
             
             if (action === 'init') {
-                resultBox.innerHTML = '<p class="text-gray-600 italic text-center py-6 col-span-full">請選擇教練姓名...</p>';
+                resultBox.innerHTML = '<p class="text-gray-500 italic text-center py-6 col-span-full">請選擇教練姓名...</p>';
                 if (!selectedMonth || cachedAttendanceRows.length === 0) return;
 
                 let monthCoachSet = new Set();
@@ -395,7 +364,7 @@
             if (action === 'render') {
                 const selectedCoach = coachDropdown.value.trim().toLowerCase();
                 if (!selectedCoach) {
-                    resultBox.innerHTML = '<p class="text-gray-600 italic text-center py-6 col-span-full">請選擇教練姓名...</p>';
+                    resultBox.innerHTML = '<p class="text-gray-500 italic text-center py-6 col-span-full">請選擇教練姓名...</p>';
                     return;
                 }
 
@@ -432,19 +401,19 @@
                 monthMatches.sort((a, b) => a.timestamp - b.timestamp);
                 if (monthMatches.length > 0) {
                     resultBox.innerHTML = monthMatches.map(m => `
-                        <div onclick="syncAndViewDate('${m.isoDate}')" class="bg-gray-950/80 p-3 rounded-xl flex justify-between items-center hover:bg-cyan-950/20 transition active:scale-98 shadow-inner cursor-pointer group border border-white/[0.01]">
+                        <div onclick="syncAndViewDate('${m.isoDate}')" class="bg-gray-950 p-2.5 rounded-xl border border-gray-850 flex justify-between items-center hover:border-cyan-500/50 hover:bg-gray-900 transition active:scale-98 shadow-inner cursor-pointer group animate-fadeIn">
                             <div>
                                  <p class="font-mono font-bold text-gray-300 group-hover:text-cyan-400 transition text-[11px]">${m.dateDisplay}</p>
                                 <p class="text-[10px] text-gray-500 font-medium">${m.weekday}</p>
                             </div>
                            <div class="text-right text-[11px] flex flex-col items-end gap-1">
                                 <div>${m.duty}</div>
-                                <span class="text-[8px] bg-gray-900 text-gray-500 group-hover:bg-cyan-900/40 group-hover:text-cyan-400 px-1.5 py-0.5 rounded border border-transparent transition">查看 ➔</span>
+                                <span class="text-[8px] bg-gray-900 text-gray-500 group-hover:bg-cyan-950 group-hover:text-cyan-400 px-1.5 py-0.2 rounded border border-gray-800 transition">點擊查看 ➔</span>
                             </div>
                         </div>
                     `).join('');
                 } else {
-                    resultBox.innerHTML = `<p class="text-gray-600 italic text-center py-8 col-span-full">🏖️ 該教練在 ${selectedYearStr}年${selectedMonth} 月份無排班紀錄。</p>`;
+                    resultBox.innerHTML = `<p class="text-gray-500 italic text-center py-8 col-span-full">🏖️ 該教練在 ${selectedYearStr}年${selectedMonth} 月份無排班紀錄。</p>`;
                 }
             }
         }
@@ -476,8 +445,8 @@
                 document.getElementById('stars-title-date').innerText = `明日之星 (${sMonth}月${sDay}日 ${targetChineseWeekday})`;
                 const youthContainer = document.getElementById('youth-schedule-list');
                 const starsContainer = document.getElementById('stars-schedule-list');
-                youthContainer.innerHTML = '<p class="text-gray-600 italic text-xs animate-pulse">Loading schedule...</p>';
-                starsContainer.innerHTML = '<p class="text-gray-600 italic text-xs animate-pulse">Loading schedule...</p>'; 
+                youthContainer.innerHTML = '<p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>';
+                starsContainer.innerHTML = '<p class="text-gray-500 italic text-sm animate-pulse">Loading...</p>'; 
 
                 const [resAttendance, resProgram, resStars] = await Promise.all([
                     fetch(`${SPREADSHEET_BASE}&gid=${GID_ATTENDANCE}`),
@@ -572,46 +541,46 @@
                 if (youthFound && finalYouthContent.trim().length > 0) {
                     const isLeave = finalYouthContent.toUpperCase().includes('LEAVE');
                     youthContainer.innerHTML = `
-                        <div class="bg-gray-950 p-4 sm:p-5 rounded-xl border-l-4 ${isLeave ? 'border-orange-500' : 'border-cyan-500'} shadow-md">
-                            <div class="mb-3 pb-2.5">
-                                <span class="text-xs font-bold text-gray-300 bg-gray-900/60 px-2.5 py-1.5 rounded-lg">
-                                    當日教練: <span class="text-yellow-400 font-black text-sm sm:text-base pl-1">${youthDisplayCoach}</span>
+                        <div class="bg-gray-950 p-5 rounded-xl border-l-8 ${isLeave ? 'border-orange-500' : 'border-cyan-500'} shadow-md animate-fadeIn">
+                            <div class="mb-4 border-b border-gray-800 pb-3">
+                                <span class="text-sm font-bold text-gray-100 bg-gray-800 px-3 py-1.5 rounded border border-gray-700">
+                                    當日教練: <span class="text-yellow-400 font-black text-base">${youthDisplayCoach}</span>
                                 </span>
                             </div>
-                            <h4 class="font-black text-white text-base mb-2">當日訓練菜單項目</h4>
-                            <div class="text-sm sm:text-base text-gray-200 bg-gray-900/40 p-3.5 rounded-xl font-mono break-words leading-relaxed whitespace-pre-wrap text-left">${finalYouthContent.trim()}</div>
+                            <h4 class="font-black text-white text-lg mb-2.5">當日訓練菜單項目</h4>
+                            <div class="text-lg text-gray-100 bg-gray-900/90 p-4 rounded-xl border border-gray-800 font-semibold font-mono break-words leading-relaxed whitespace-pre-wrap text-left">${finalYouthContent.trim()}</div>
                         </div>
                     `;
                 } else {
                     youthContainer.innerHTML = `
-                        <div class="text-center py-10 text-gray-600 rounded-xl bg-gray-950/20">
-                            <span class="text-xl block mb-1">🏖️</span>
-                            <p class="text-xs italic">所選日期 中長青訓目前無排程數據。</p>
+                        <div class="text-center py-12 text-gray-600 border border-dashed border-gray-800 rounded-xl">
+                            <span class="text-2xl block mb-2">🏖️</span>
+                            <p class="text-sm italic">所選日期 中長青訓目前無排程數據。</p>
                         </div>`;
                 }
 
                 if (starsFound && finalStarsContent.trim().length > 0) {
                     const isLeave = finalStarsContent.toUpperCase().includes('LEAVE');
                     starsContainer.innerHTML = `
-                        <div class="bg-gray-950 p-4 sm:p-5 rounded-xl border-l-4 ${isLeave ? 'border-orange-500' : 'border-amber-500'} shadow-md">
-                            <div class="mb-3 pb-2.5">
-                                <span class="text-xs font-bold text-gray-300 bg-gray-900/60 px-2.5 py-1.5 rounded-lg">
-                                    當日教練 : <span class="text-amber-400 font-black text-sm sm:text-base pl-1">${starsDisplayCoach}</span>
+                        <div class="bg-gray-950 p-5 rounded-xl border-l-8 ${isLeave ? 'border-orange-500' : 'border-amber-500'} shadow-md animate-fadeIn">
+                            <div class="mb-4 border-b border-gray-800 pb-3">
+                                <span class="text-sm font-bold text-gray-100 bg-gray-800 px-3 py-1.5 rounded border border-gray-700">
+                                    當日教練 : <span class="text-amber-400 font-black text-base">${starsDisplayCoach}</span>
                                 </span>
                             </div>
-                            <h4 class="font-black text-white text-base mb-2">當日訓練菜單項目 (Train)</h4>
-                            <div class="text-sm sm:text-base text-gray-200 bg-gray-900/40 p-3.5 rounded-xl font-mono break-words leading-relaxed whitespace-pre-wrap text-left">${finalStarsContent.trim()}</div>
+                            <h4 class="font-black text-white text-lg mb-2.5">當日訓練菜單項目 (Train)</h4>
+                            <div class="text-lg text-gray-100 bg-gray-900/90 p-4 rounded-xl border border-gray-800 font-semibold font-mono break-words leading-relaxed whitespace-pre-wrap text-left">${finalStarsContent.trim()}</div>
                         </div>
                     `;
                 } else {
                     starsContainer.innerHTML = `
-                        <div class="bg-gray-950 p-3.5 rounded-xl border-l-4 border-amber-500/40 shadow-md mb-3">
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">當日指派教練</p>
-                            <p class="text-lg font-black text-amber-400 mt-0.5">${starsDisplayCoach}</p>
+                        <div class="bg-gray-950 p-4 rounded-xl border border-l-8 border-amber-500/40 shadow-md mb-4">
+                            <p class="text-xs text-gray-400">當日指派教練 </p>
+                            <p class="text-2xl font-black text-amber-400 mt-1">${starsDisplayCoach}</p>
                         </div>
-                        <div class="text-center py-10 text-gray-600 rounded-xl bg-gray-950/20">
-                            <span class="text-xl block mb-1">🏖️</span>
-                            <p class="text-xs italic">所選日期 明日之星流水帳中無訓練菜單。</p>
+                        <div class="text-center py-12 text-gray-600 border border-dashed border-gray-800 rounded-xl">
+                            <span class="text-2xl block mb-2">🏖️</span>
+                            <p class="text-sm italic">所選日期 明日之星流水帳中無訓練菜單。</p>
                         </div>`;
                 }
 
