@@ -420,9 +420,7 @@
         // --- Core Modules Tracking Anchored Architecture ---
         let countdownInterval = null, countdownRunning = false;
         let countdownRemaining = 0, countdownCurrentRound = 1, countdownTotalRounds = 1;
-        let countdownCountdownPhase = false, countdownCountdownValue = 5;
         let countdownExpectedEndTime = null; // Time Anchor
-        let lastPlayedCountdownSec = -1; // Audio track duplicate sound block lock
 
         function getCountdownSetupTime() {
             return (parseInt(document.getElementById('countdown-minutes').value) || 0) * 60 + (parseInt(document.getElementById('countdown-seconds').value) || 0);
@@ -436,8 +434,7 @@
             if (countdownRemaining === 0) {
                 countdownRemaining = getCountdownSetupTime();
                 countdownTotalRounds = parseInt(document.getElementById('countdown-rounds').value) || 1;
-                countdownCurrentRound = 1; countdownCountdownPhase = true; countdownCountdownValue = 5;
-                lastPlayedCountdownSec = -1;
+                countdownCurrentRound = 1;
                 requestFullscreen(document.body);
             }
             
@@ -446,59 +443,32 @@
 
             countdownInterval = setInterval(() => {
                 const now = Date.now();
-                
-                if (countdownCountdownPhase) {
-                    const diffSeconds = Math.ceil((countdownExpectedEndTime - now) / 1000);
-                    countdownCountdownValue = diffSeconds;
-                    
-                    if (countdownCountdownValue > 0) {
-                        if (countdownCountdownValue <= 5 && countdownCountdownValue !== lastPlayedCountdownSec) {
-                            playTrackBeep(false);
-                            lastPlayedCountdownSec = countdownCountdownValue;
-                        }
-                        document.getElementById('countdown-display').textContent = countdownCountdownValue;
-                        document.getElementById('countdown-details-display').textContent = 'Get Ready...';
-                        setWidgetTheme('countdown', 'prep', 'PREPARATION');
-                        updateSystemStatusBar(`Get Ready! (${countdownCountdownValue}s)`, `Round ${countdownCurrentRound}/${countdownTotalRounds}`);
-                    } else {
-                        playTrackBeep(true); 
-                        countdownCountdownPhase = false; 
-                        countdownCountdownValue = -1;
-                        lastPlayedCountdownSec = -1;
+                const diffSeconds = Math.ceil((countdownExpectedEndTime - now) / 1000);
+                countdownRemaining = diffSeconds;
+
+                if (countdownRemaining > 0) {
+                    updateCountdownDisplay();
+                    if (countdownRemaining === 20 || countdownRemaining === 10) playTrackBeep(false);
+                } else {
+                    playTrackBeep(true);
+                    if (countdownCurrentRound < countdownTotalRounds) {
+                        countdownCurrentRound++; 
                         countdownRemaining = getCountdownSetupTime();
                         calculateNextCountdownAnchor();
                         updateCountdownDisplay();
-                    }
-                } else {
-                    const diffSeconds = Math.ceil((countdownExpectedEndTime - now) / 1000);
-                    countdownRemaining = diffSeconds;
-
-                    if (countdownRemaining > 0) {
-                        updateCountdownDisplay();
-                        if (countdownRemaining === 20 || countdownRemaining === 10) playTrackBeep(false);
                     } else {
-                        playTrackBeep(true);
-                        if (countdownCurrentRound < countdownTotalRounds) {
-                            countdownCurrentRound++; 
-                            countdownCountdownPhase = true; 
-                            countdownCountdownValue = 5;
-                            lastPlayedCountdownSec = -1;
-                            calculateNextCountdownAnchor();
-                        } else {
-                            clearInterval(countdownInterval); 
-                            countdownRunning = false; 
-                            exitFullscreen();
-                            disableBackgroundWakeLock();
-                            updateSystemStatusBar("Timer Finished!", "All rounds completed.", false);
-                        }
+                        clearInterval(countdownInterval); 
+                        countdownRunning = false; 
+                        exitFullscreen();
+                        disableBackgroundWakeLock();
+                        updateSystemStatusBar("Timer Finished!", "All rounds completed.", false);
                     }
                 }
             }, 250); 
         }
 
         function calculateNextCountdownAnchor() {
-            const span = countdownCountdownPhase ? countdownCountdownValue : countdownRemaining;
-            countdownExpectedEndTime = Date.now() + (span * 1000);
+            countdownExpectedEndTime = Date.now() + (countdownRemaining * 1000);
         }
 
         function pauseCountdownTimer() { 
@@ -511,8 +481,7 @@
         function resetCountdownTimer() {
             countdownRunning = false; clearInterval(countdownInterval);
             disableBackgroundWakeLock();
-            countdownRemaining = 0; countdownCurrentRound = 1; countdownCountdownPhase = false; countdownCountdownValue = 5;
-            lastPlayedCountdownSec = -1;
+            countdownRemaining = 0; countdownCurrentRound = 1;
             updateCountdownDisplay(); exitFullscreen();
             clearSystemStatusBar();
         }
@@ -528,19 +497,14 @@
                 return;
             }
 
-            if (countdownCountdownPhase && countdownCountdownValue > 0) {
-                document.getElementById('countdown-display').textContent = countdownCountdownValue;
-                document.getElementById('countdown-details-display').textContent = 'Get Ready...';
-                setWidgetTheme('countdown', 'prep', 'PREPARATION');
-            } else {
-                const displaySecs = formatTimeText(countdownRemaining);
-                document.getElementById('countdown-display').textContent = displaySecs;
-                document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
-                setWidgetTheme('countdown', 'countdown', 'COUNTDOWN');
-                
-                const subtitleText = document.getElementById('countdown-details').value || "Countdown running...";
-                updateSystemStatusBar(`${displaySecs} | Round ${countdownCurrentRound}/${countdownTotalRounds}`, subtitleText);
-            }
+            const displaySecs = formatTimeText(countdownRemaining);
+            document.getElementById('countdown-display').textContent = displaySecs;
+            document.getElementById('countdown-details-display').textContent = document.getElementById('countdown-details').value;
+            setWidgetTheme('countdown', 'countdown', 'COUNTDOWN');
+            
+            const subtitleText = document.getElementById('countdown-details').value || "Countdown running...";
+            updateSystemStatusBar(`${displaySecs} | Round ${countdownCurrentRound}/${countdownTotalRounds}`, subtitleText);
+            
             document.getElementById('countdown-round-display').textContent = countdownCurrentRound;
             document.getElementById('countdown-total-rounds').textContent = countdownTotalRounds;
         }
